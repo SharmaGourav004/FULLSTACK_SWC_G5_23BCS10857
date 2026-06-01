@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q4 - Boards, Dashboards, and Commerce</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #f1ede6;
+      --card: #ffffff;
+      --text: #192229;
+      --muted: #5e6a73;
+      --line: rgba(25, 34, 41, 0.12);
+      --accent: #216e5e;
+      --shadow: 0 18px 42px rgba(25, 34, 41, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(33, 110, 94, 0.1), transparent 28%),
+        linear-gradient(135deg, #f8f2ea, #eef4f1);
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(33, 110, 94, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .stack { display: grid; gap: 18px; margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(33,110,94,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .kanban-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .column {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      min-height: 320px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .column.dragover {
+      outline: 2px dashed rgba(33, 110, 94, 0.35);
+      outline-offset: -6px;
+      background: rgba(33, 110, 94, 0.04);
+    }
+
+    .card-task {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(180deg, #fff, #faf8f5);
+      cursor: grab;
+    }
+
+    .card-task:active { cursor: grabbing; }
+    .card-task h4 { margin: 0 0 8px; }
+    .card-task p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .column-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .badge { padding: 6px 10px; border-radius: 999px; background: rgba(33, 110, 94, 0.1); color: var(--accent); font-size: 0.82rem; font-weight: 700; }
+
+    .dashboard-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .kpi, .table-card, .amazon-shell {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .kpi {
+      padding: 16px;
+      min-height: 114px;
+    }
+
+    .kpi .value { font-size: 1.8rem; font-weight: 800; margin-top: 8px; }
+    .kpi .label { color: var(--muted); font-size: 0.92rem; }
+    .kpi .delta { color: #2d7a4b; font-weight: 700; font-size: 0.88rem; }
+
+    .table-card { overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+    th { background: #f9f6f1; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    td { font-size: 0.95rem; }
+
+    .amazon-shell {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .filter-chip {
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .product-card {
+      border: 1px solid rgba(25, 34, 41, 0.08);
+      border-radius: 18px;
+      background: #fff;
+      overflow: hidden;
+      transition: transform 150ms ease, box-shadow 150ms ease;
+    }
+
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(25, 34, 41, 0.08); }
+    .product-card img { width: 100%; height: 160px; object-fit: cover; display: block; }
+
+    @media (max-width: 1100px) {
+      .kanban-grid, .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1200px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q4</span>
+      <h1>Boards, dashboards, and a product listing page</h1>
+      <p class="lead">This folder contains the Kanban board, a responsive analytics dashboard, and an Amazon-style product listing built with Tailwind CSS.</p>
+    </section>
+
+    <section class="stack">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Kanban board</h2>
+          <p>Drag cards across the To Do, In Progress, and Done columns.</p>
+        </div>
+        <div class="panel-body">
+          <div class="kanban-grid" id="kanbanBoard"></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Responsive analytics dashboard</h2>
+          <p>KPI cards, adaptive grid, and a simple data table.</p>
+        </div>
+        <div class="panel-body">
+          <div class="dashboard-grid">
+            <div class="kpi"><div class="label">Revenue</div><div class="value">$124K</div><div class="delta">+12.4%</div></div>
+            <div class="kpi"><div class="label">Orders</div><div class="value">8,420</div><div class="delta">+6.1%</div></div>
+            <div class="kpi"><div class="label">Conversion</div><div class="value">4.8%</div><div class="delta">+0.7%</div></div>
+            <div class="kpi"><div class="label">Active users</div><div class="value">18.2K</div><div class="delta">+9.3%</div></div>
+          </div>
+          <div class="table-card" style="margin-top: 14px;">
+            <table>
+              <thead>
+                <tr><th>Channel</th><th>Sessions</th><th>Conversion</th><th>Trend</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Organic</td><td>24,120</td><td>5.2%</td><td>Up</td></tr>
+                <tr><td>Paid</td><td>14,800</td><td>4.1%</td><td>Stable</td></tr>
+                <tr><td>Social</td><td>9,460</td><td>3.4%</td><td>Up</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Amazon product listing page</h2>
+          <p>Tailwind-based layout with header, filters, and responsive cards.</p>
+        </div>
+        <div class="panel-body p-0">
+          <div id="amazonApp"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const kanbanData = {
+      todo: [
+        { id: 'k1', title: 'Finalize homepage copy', detail: 'Review product messaging and metadata.' },
+        { id: 'k2', title: 'Prepare release notes', detail: 'Summarize the latest updates for users.' },
+      ],
+      progress: [
+        { id: 'k3', title: 'Implement search bar', detail: 'Wire search to the live product catalog.' },
+      ],
+      done: [
+        { id: 'k4', title: 'Set up analytics cards', detail: 'Completed responsive KPI layout.' },
+      ],
+    };
+
+    const board = document.getElementById('kanbanBoard');
+    let draggedId = null;
+
+    function renderBoard() {
+      board.innerHTML = '';
+      const columns = [
+        { key: 'todo', title: 'To Do' },
+        { key: 'progress', title: 'In Progress' },
+        { key: 'done', title: 'Done' },
+      ];
+
+      columns.forEach((column) => {
+        const columnEl = document.createElement('section');
+        columnEl.className = 'column';
+        columnEl.dataset.column = column.key;
+        columnEl.innerHTML = `
+          <div class="column-title"><h3 style="margin:0;">${column.title}</h3><span class="badge">${kanbanData[column.key].length}</span></div>
+        `;
+
+        kanbanData[column.key].forEach((card) => {
+          const article = document.createElement('article');
+          article.className = 'card-task';
+          article.draggable = true;
+          article.dataset.id = card.id;
+          article.innerHTML = `<h4>${card.title}</h4><p>${card.detail}</p>`;
+          article.addEventListener('dragstart', () => {
+            draggedId = card.id;
+          });
+          columnEl.append(article);
+        });
+
+        columnEl.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          columnEl.classList.add('dragover');
+        });
+        columnEl.addEventListener('dragleave', () => columnEl.classList.remove('dragover'));
+        columnEl.addEventListener('drop', () => {
+          columnEl.classList.remove('dragover');
+          if (!draggedId) return;
+          moveCard(draggedId, column.key);
+          draggedId = null;
+        });
+
+        board.append(columnEl);
+      });
+    }
+
+    function moveCard(id, targetColumn) {
+      const sourceColumn = Object.keys(kanbanData).find((key) => kanbanData[key].some((card) => card.id === id));
+      if (!sourceColumn || sourceColumn === targetColumn) return;
+      const cardIndex = kanbanData[sourceColumn].findIndex((card) => card.id === id);
+      const [card] = kanbanData[sourceColumn].splice(cardIndex, 1);
+      kanbanData[targetColumn].push(card);
+      renderBoard();
+    }
+
+    renderBoard();
+
+    const products = [
+      { name: 'Noise Cancelling Headphones', price: 129, rating: 4.6, category: 'Audio', image: 'https://picsum.photos/seed/amz-1/600/400' },
+      { name: 'Ergonomic Office Chair', price: 219, rating: 4.4, category: 'Furniture', image: 'https://picsum.photos/seed/amz-2/600/400' },
+      { name: 'Smart LED Lamp', price: 39, rating: 4.2, category: 'Home', image: 'https://picsum.photos/seed/amz-3/600/400' },
+      { name: '4K Action Camera', price: 179, rating: 4.7, category: 'Electronics', image: 'https://picsum.photos/seed/amz-4/600/400' },
+      { name: 'Travel Backpack', price: 89, rating: 4.5, category: 'Travel', image: 'https://picsum.photos/seed/amz-5/600/400' },
+      { name: 'Smart Watch', price: 149, rating: 4.3, category: 'Electronics', image: 'https://picsum.photos/seed/amz-6/600/400' },
+    ];
+
+    const amazonApp = document.getElementById('amazonApp');
+    const categories = ['All', ...new Set(products.map((product) => product.category))];
+    const priceRanges = [
+      { label: 'All', min: 0, max: Infinity },
+      { label: 'Under $100', min: 0, max: 100 },
+      { label: '$100 - $200', min: 100, max: 200 },
+      { label: 'Above $200', min: 200, max: Infinity },
+    ];
+
+    let activeCategory = 'All';
+    let activePrice = 'All';
+    let minRating = 0;
+    let searchQuery = '';
+
+    amazonApp.innerHTML = `
+        <div class="bg-[#f8f4ef] border-b border-[color:var(--line)] px-4 md:px-6 py-4">
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-11 w-11 rounded-2xl bg-[#216e5e] text-white flex items-center justify-center font-black">A</div>
+              <div>
+                <div class="text-lg font-black">Amazon Style Store</div>
+                <div class="text-sm text-[color:var(--muted)]">Responsive product discovery page</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 flex-1 md:max-w-xl">
+              <input id="amazonSearch" class="w-full rounded-2xl border border-black/10 px-4 py-3 outline-none" placeholder="Search products" />
+              <button class="rounded-2xl bg-[#216e5e] px-4 py-3 font-bold text-white">Cart (3)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-0 lg:grid-cols-[280px_1fr]">
+          <aside class="border-r border-[color:var(--line)] bg-white p-4 md:p-5">
+            <div class="space-y-6">
+              <div>
+                <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--muted)]">Price</div>
+                <div id="priceFilters" class="flex flex-wrap gap-2"></div>
+              </div>
+              <div>
+                <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--muted)]">Category</div>
+                <div id="categoryFilters" class="flex flex-wrap gap-2"></div>
+              </div>
+              <div>
+                <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[color:var(--muted)]">Rating</div>
+                <input id="ratingFilter" type="range" min="0" max="5" step="0.5" value="0" class="w-full" />
+                <div class="mt-2 text-sm text-[color:var(--muted)]">Minimum rating: <span id="ratingValue">0</span></div>
+              </div>
+            </div>
+          </aside>
+          <section class="p-4 md:p-6 bg-[#faf8f5]">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm text-[color:var(--muted)]">Filtered product grid</div>
+                <div class="text-xl font-black" id="productCount"></div>
+              </div>
+              <div class="text-sm text-[color:var(--muted)]">Fast layout, responsive cards</div>
+            </div>
+            <div id="productGrid" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+          </section>
+        </div>
+      `;
+
+    const categoryFilters = document.getElementById('categoryFilters');
+    const priceFilters = document.getElementById('priceFilters');
+    const productGrid = document.getElementById('productGrid');
+    const productCount = document.getElementById('productCount');
+    const amazonSearch = document.getElementById('amazonSearch');
+    const ratingFilter = document.getElementById('ratingFilter');
+    const ratingValue = document.getElementById('ratingValue');
+
+    function renderAmazonProducts() {
+      priceFilters.innerHTML = priceRanges.map((range) => `<button type="button" class="filter-chip${activePrice === range.label ? ' active' : ''}" data-price="${range.label}">${range.label}</button>`).join('');
+      categoryFilters.innerHTML = categories.map((category) => `<button type="button" class="filter-chip${activeCategory === category ? ' active' : ''}" data-category="${category}">${category}</button>`).join('');
+      ratingValue.textContent = String(minRating);
+      ratingFilter.value = String(minRating);
+
+      const filtered = products.filter((product) => {
+        const priceRange = priceRanges.find((range) => range.label === activePrice) || priceRanges[0];
+        const categoryOk = activeCategory === 'All' || product.category === activeCategory;
+        const priceOk = product.price >= priceRange.min && product.price <= priceRange.max;
+        const ratingOk = product.rating >= minRating;
+        const searchOk = !searchQuery || product.name.toLowerCase().includes(searchQuery);
+        return categoryOk && priceOk && ratingOk && searchOk;
+      });
+
+      productCount.textContent = `${filtered.length} product${filtered.length === 1 ? '' : 's'}`;
+      productGrid.innerHTML = filtered.map((product) => `
+        <article class="product-card">
+          <img src="${product.image}" alt="${product.name}" />
+          <div class="p-4 space-y-2">
+            <div class="text-sm text-[#216e5e] font-semibold">${product.category}</div>
+            <h3 class="text-lg font-bold leading-snug">${product.name}</h3>
+            <div class="flex items-center justify-between text-sm text-[color:var(--muted)]">
+              <span>$${product.price}</span>
+              <span>${product.rating} / 5</span>
+            </div>
+            <button type="button" class="w-full rounded-2xl bg-[#216e5e] px-4 py-2 font-bold text-white">Add to cart</button>
+          </div>
+        </article>
+      `).join('') || '<div class="rounded-2xl border border-dashed border-black/20 bg-white p-6 text-[color:var(--muted)]">No products match the current filters.</div>';
+    }
+
+    amazonSearch.addEventListener('input', (event) => {
+      searchQuery = event.target.value.trim().toLowerCase();
+      renderAmazonProducts();
+    });
+
+    priceFilters.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-price]');
+      if (!button) return;
+      activePrice = button.dataset.price;
+      renderAmazonProducts();
+    });
+
+    categoryFilters.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-category]');
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      renderAmazonProducts();
+    });
+
+    ratingFilter.addEventListener('input', (event) => {
+      minRating = Number(event.target.value);
+      renderAmazonProducts();
+    });
+
+    renderAmazonProducts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q1 - Task Management and Lists</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f2ea;
+      --card: #ffffff;
+      --card-soft: #fff8f0;
+      --text: #1d2a33;
+      --muted: #5c6a73;
+      --line: rgba(29, 42, 51, 0.12);
+      --accent: #21725f;
+      --accent-2: #cc6b3f;
+      --danger: #bf3f3f;
+      --ok: #2d7a4b;
+      --shadow: 0 18px 42px rgba(29, 42, 51, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(33, 114, 95, 0.12), transparent 30%),
+        linear-gradient(135deg, #f7f2eb, #eef5f2);
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.82);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(33, 114, 95, 0.1);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.6; }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(33,114,95,0.06), rgba(204,107,63,0.05));
+    }
+
+    .panel-head h2 { margin: 0; font-size: 1.2rem; }
+    .panel-head p { margin: 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .todo-form,
+    .search-bar,
+    .toolbar,
+    .mini-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"], input[type="search"] {
+      flex: 1;
+      min-width: 220px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font: inherit;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus, button:focus, textarea:focus {
+      border-color: rgba(33, 114, 95, 0.45);
+      box-shadow: 0 0 0 4px rgba(33, 114, 95, 0.1);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 150ms ease, opacity 150ms ease, background 150ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: #edf4f2; color: var(--text); }
+    .btn-danger { background: #f4e5e5; color: var(--danger); }
+    .btn-ghost { background: transparent; color: var(--accent); padding-inline: 0; }
+
+    .todo-list,
+    .items-list,
+    .tabs,
+    .tab-panels { display: grid; gap: 12px; }
+
+    .todo-item,
+    .item-row,
+    .tab-button,
+    .tab-panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card-soft);
+    }
+
+    .todo-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+    }
+
+    .todo-item.done .todo-text { text-decoration: line-through; opacity: 0.62; }
+    .todo-item input[type="text"] { min-width: 0; }
+
+    .todo-main { display: grid; gap: 8px; }
+    .todo-meta { color: var(--muted); font-size: 0.88rem; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(33, 114, 95, 0.1);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .tabs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 12px;
+    }
+
+    .tab-button {
+      padding: 14px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .tab-button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .tab-panel { padding: 18px; }
+    .tab-panel[hidden] { display: none; }
+
+    .items-list {
+      max-height: 600px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+
+    .item-row small { color: var(--muted); }
+
+    .summary {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .summary .tag { background: rgba(204, 107, 63, 0.1); color: var(--accent-2); }
+
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .page { width: min(100% - 16px, 1200px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .todo-item { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q1</span>
+      <h1>Task management and list interactions</h1>
+      <p class="lead">This page combines the todo app, tab navigation, and the event-delegated large list into one practical demo.</p>
+      <div class="summary">
+        <span class="tag">Add, edit, delete, complete</span>
+        <span class="tag">Tabs with one active view</span>
+        <span class="tag">1000 item list with delegation</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Todo application</h2>
+            <p>Inline editing, completion toggles, and clean deletion.</p>
+          </div>
+          <span class="tag" id="todoCount">0 items</span>
+        </div>
+        <div class="panel-body">
+          <form class="todo-form" id="todoForm">
+            <input id="todoInput" type="text" placeholder="Add a daily task" autocomplete="off" />
+            <button class="btn-primary" type="submit">Add task</button>
+          </form>
+          <div class="todo-list" id="todoList" style="margin-top: 16px;"></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Tabs</h2>
+            <p>Only one tab is active at a time.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="tabs" id="tabs">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="details">Details</button>
+            <button class="tab-button" data-tab="settings">Settings</button>
+          </div>
+          <div class="tab-panels">
+            <section class="tab-panel" data-panel="overview">
+              <h3>Overview</h3>
+              <p>Use this pattern for dashboards and content sections where users switch between focused views.</p>
+            </section>
+            <section class="tab-panel" data-panel="details" hidden>
+              <h3>Details</h3>
+              <p>Tabs can be driven by state, with the active button highlighted and the matching panel shown.</p>
+            </section>
+            <section class="tab-panel" data-panel="settings" hidden>
+              <h3>Settings</h3>
+              <p>Only one panel remains visible, which keeps the interface predictable and compact.</p>
+            </section>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel" style="margin-top: 18px;">
+      <div class="panel-head">
+        <div>
+          <h2>Large list with event delegation</h2>
+          <p>One click listener handles all delete actions for 1000+ items.</p>
+        </div>
+        <form class="toolbar" id="listToolbar">
+          <input id="listFilter" type="search" placeholder="Filter items" />
+          <button class="btn-secondary" type="submit">Apply</button>
+        </form>
+      </div>
+      <div class="panel-body">
+        <div class="items-list" id="itemsList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const todoForm = document.getElementById('todoForm');
+    const todoInput = document.getElementById('todoInput');
+    const todoList = document.getElementById('todoList');
+    const todoCount = document.getElementById('todoCount');
+    const tabs = document.getElementById('tabs');
+    const tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+    const itemsList = document.getElementById('itemsList');
+    const listToolbar = document.getElementById('listToolbar');
+    const listFilter = document.getElementById('listFilter');
+
+    let todos = [
+      { id: crypto.randomUUID(), text: 'Review tasks for the day', done: false, editing: false },
+      { id: crypto.randomUUID(), text: 'Send project status update', done: true, editing: false },
+    ];
+
+    let largeItems = Array.from({ length: 1000 }, (_, index) => ({
+      id: index + 1,
+      title: `Notification item ${index + 1}`,
+    }));
+
+    let listQuery = '';
+
+    function renderTodos() {
+      todoList.innerHTML = '';
+      todoCount.textContent = `${todos.length} ${todos.length === 1 ? 'item' : 'items'}`;
+
+      todos.forEach((todo) => {
+        const article = document.createElement('article');
+        article.className = `todo-item${todo.done ? ' done' : ''}`;
+        article.dataset.id = todo.id;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.done;
+        checkbox.dataset.action = 'toggle';
+
+        const main = document.createElement('div');
+        main.className = 'todo-main';
+
+        if (todo.editing) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = todo.text;
+          input.dataset.action = 'edit-input';
+          input.autofocus = true;
+
+          const helper = document.createElement('div');
+          helper.className = 'todo-meta';
+          helper.textContent = 'Press Enter to save, Escape to cancel.';
+
+          main.append(input, helper);
+        } else {
+          const text = document.createElement('strong');
+          text.className = 'todo-text';
+          text.textContent = todo.text;
+
+          const meta = document.createElement('div');
+          meta.className = 'todo-meta';
+          meta.textContent = todo.done ? 'Completed task' : 'Open task';
+
+          main.append(text, meta);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'toolbar';
+
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn-secondary';
+        editButton.dataset.action = todo.editing ? 'save' : 'edit';
+        editButton.textContent = todo.editing ? 'Save' : 'Edit';
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn-danger';
+        deleteButton.dataset.action = 'delete';
+        deleteButton.textContent = 'Delete';
+
+        actions.append(editButton, deleteButton);
+        article.append(checkbox, main, actions);
+        todoList.append(article);
+      });
+    }
+
+    todoForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = todoInput.value.trim();
+      if (!text) return;
+
+      todos.unshift({ id: crypto.randomUUID(), text, done: false, editing: false });
+      todoInput.value = '';
+      renderTodos();
+    });
+
+    todoList.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const article = button.closest('.todo-item');
+      if (!article) return;
+      const id = article.dataset.id;
+      const todo = todos.find((entry) => entry.id === id);
+      if (!todo) return;
+
+      const action = button.dataset.action;
+      if (action === 'delete') {
+        todos = todos.filter((entry) => entry.id !== id);
+      } else if (action === 'edit') {
+        todos = todos.map((entry) => ({ ...entry, editing: entry.id === id }));
+      } else if (action === 'save') {
+        const input = article.querySelector('[data-action="edit-input"]');
+        const nextText = input.value.trim();
+        if (!nextText) return;
+        todos = todos.map((entry) => entry.id === id ? { ...entry, text: nextText, editing: false } : entry);
+      }
+
+      renderTodos();
+    });
+
+    todoList.addEventListener('change', (event) => {
+      if (event.target.dataset.action !== 'toggle') return;
+      const article = event.target.closest('.todo-item');
+      const id = article.dataset.id;
+      todos = todos.map((entry) => entry.id === id ? { ...entry, done: event.target.checked } : entry);
+      renderTodos();
+    });
+
+    todoList.addEventListener('keydown', (event) => {
+      if (event.target.dataset.action !== 'edit-input') return;
+      const article = event.target.closest('.todo-item');
+      const id = article.dataset.id;
+
+      if (event.key === 'Enter') {
+        const value = event.target.value.trim();
+        if (!value) return;
+        todos = todos.map((entry) => entry.id === id ? { ...entry, text: value, editing: false } : entry);
+        renderTodos();
+      }
+
+      if (event.key === 'Escape') {
+        todos = todos.map((entry) => ({ ...entry, editing: false }));
+        renderTodos();
+      }
+    });
+
+    tabs.addEventListener('click', (event) => {
+      const button = event.target.closest('.tab-button');
+      if (!button) return;
+      const activeTab = button.dataset.tab;
+
+      tabButtons.forEach((item) => item.classList.toggle('active', item === button));
+      tabPanels.forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== activeTab;
+      });
+    });
+
+    function renderLargeList() {
+      const filtered = largeItems.filter((item) => item.title.toLowerCase().includes(listQuery));
+      itemsList.innerHTML = '';
+
+      const fragment = document.createDocumentFragment();
+      filtered.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.dataset.id = String(item.id);
+        row.innerHTML = `
+          <div>
+            <strong>${item.title}</strong><br />
+            <small>ID: ${item.id}</small>
+          </div>
+          <button class="btn-danger" data-action="remove-item" type="button">Delete</button>
+        `;
+        fragment.append(row);
+      });
+
+      itemsList.append(fragment);
+    }
+
+    itemsList.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action="remove-item"]');
+      if (!button) return;
+      const row = button.closest('.item-row');
+      const id = Number(row.dataset.id);
+      largeItems = largeItems.filter((item) => item.id !== id);
+      renderLargeList();
+    });
+
+    listToolbar.addEventListener('submit', (event) => {
+      event.preventDefault();
+      listQuery = listFilter.value.trim().toLowerCase();
+      renderLargeList();
+    });
+
+    listFilter.addEventListener('input', () => {
+      if (!listFilter.value.trim()) {
+        listQuery = '';
+        renderLargeList();
+      }
+    });
+
+    renderTodos();
+    renderLargeList();
+  </script>
+</body>
+</html>

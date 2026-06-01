@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q3 - Carousel and Infinite Loading</title>
+  <style>
+    :root {
+      --bg: #f2efe8;
+      --card: #ffffff;
+      --text: #1d2832;
+      --muted: #5a6871;
+      --line: rgba(29, 40, 50, 0.12);
+      --accent: #1e6d60;
+      --shadow: 0 18px 42px rgba(29, 40, 50, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(30, 109, 96, 0.12), transparent 30%),
+        linear-gradient(135deg, #f7f3ec, #eef6f2);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(30, 109, 96, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .stack { display: grid; gap: 18px; margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(30,109,96,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #0f1720;
+    }
+
+    .track {
+      display: flex;
+      transition: transform 360ms ease;
+      will-change: transform;
+    }
+
+    .slide {
+      min-width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0.92;
+    }
+
+    .caption {
+      position: absolute;
+      inset: auto 20px 20px 20px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(14, 20, 27, 0.65);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .caption strong { display: block; font-size: 1.1rem; }
+    .caption span { color: rgba(255,255,255,0.78); }
+
+    .controls {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      padding: 0 14px;
+    }
+
+    .controls button {
+      pointer-events: auto;
+      border: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+    }
+
+    .dots {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.42);
+      border: 0;
+      cursor: pointer;
+    }
+
+    .dot.active { background: #fff; width: 26px; }
+
+    .feed {
+      max-height: 640px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .feed-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .feed-card,
+    .skeleton {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 14px;
+    }
+
+    .feed-card h3 { margin: 0; font-size: 1rem; }
+    .feed-card p { margin: 8px 0 0; color: var(--muted); line-height: 1.55; }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      min-height: 108px;
+    }
+
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+      animation: shimmer 1.2s infinite;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(29, 40, 50, 0.08);
+      margin-bottom: 10px;
+    }
+
+    .skeleton-line.short { width: 56%; }
+    .skeleton-line.medium { width: 76%; }
+    .skeleton-line.long { width: 92%; }
+
+    .loader-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(30, 109, 96, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes shimmer { to { transform: translateX(100%); } }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1180px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .controls { padding-inline: 8px; }
+      .controls button { width: 36px; height: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q3</span>
+      <h1>Carousel, auto loading, and skeleton placeholders</h1>
+      <p class="lead">The carousel pauses on hover, and the feed loads more content automatically while preventing duplicate fetches.</p>
+    </section>
+
+    <section class="stack">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Reusable image carousel</h2>
+          <p>Next, previous, auto-slide, and hover-to-pause behavior.</p>
+        </div>
+        <div class="panel-body">
+          <div class="carousel" id="carousel">
+            <div class="track" id="carouselTrack"></div>
+            <div class="controls">
+              <button id="prevSlide" aria-label="Previous image">&#8249;</button>
+              <button id="nextSlide" aria-label="Next image">&#8250;</button>
+            </div>
+            <div class="dots" id="carouselDots"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Infinite scrolling feed</h2>
+          <p>Uses simulated API calls, loading state, and CSS skeleton cards.</p>
+        </div>
+        <div class="panel-body">
+          <div class="feed" id="feedViewport">
+            <div class="feed-list" id="feedList"></div>
+            <div id="feedStatus" class="loader-state">Scroll near the bottom to load more items.</div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const slides = [
+      { title: 'Sunset collection', subtitle: 'Clean hero imagery for product viewers.', src: 'https://picsum.photos/seed/q3-1/1200/675' },
+      { title: 'Travel stories', subtitle: 'Smooth transitions with automatic rotation.', src: 'https://picsum.photos/seed/q3-2/1200/675' },
+      { title: 'Modern workspace', subtitle: 'Pause on hover to let users inspect content.', src: 'https://picsum.photos/seed/q3-3/1200/675' },
+    ];
+
+    const carouselTrack = document.getElementById('carouselTrack');
+    const carouselDots = document.getElementById('carouselDots');
+    const carousel = document.getElementById('carousel');
+    const prevSlide = document.getElementById('prevSlide');
+    const nextSlide = document.getElementById('nextSlide');
+    const feedViewport = document.getElementById('feedViewport');
+    const feedList = document.getElementById('feedList');
+    const feedStatus = document.getElementById('feedStatus');
+
+    let slideIndex = 0;
+    let carouselTimer = null;
+    let feedPage = 0;
+    let isLoading = false;
+    let canLoadMore = true;
+
+    function renderCarousel() {
+      carouselTrack.innerHTML = slides.map((slide, index) => `
+        <div class="slide">
+          <img src="${slide.src}" alt="${slide.title}" />
+          <div class="caption">
+            <strong>${slide.title}</strong>
+            <span>${slide.subtitle}</span>
+          </div>
+        </div>
+      `).join('');
+
+      carouselDots.innerHTML = slides.map((_, index) => `<button class="dot${index === 0 ? ' active' : ''}" data-index="${index}" aria-label="Go to slide ${index + 1}"></button>`).join('');
+      updateCarousel();
+    }
+
+    function updateCarousel() {
+      carouselTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
+      document.querySelectorAll('.dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === slideIndex);
+      });
+    }
+
+    function goToSlide(nextIndex) {
+      slideIndex = (nextIndex + slides.length) % slides.length;
+      updateCarousel();
+    }
+
+    function restartAutoSlide() {
+      clearInterval(carouselTimer);
+      carouselTimer = window.setInterval(() => goToSlide(slideIndex + 1), 3000);
+    }
+
+    prevSlide.addEventListener('click', () => {
+      goToSlide(slideIndex - 1);
+      restartAutoSlide();
+    });
+
+    nextSlide.addEventListener('click', () => {
+      goToSlide(slideIndex + 1);
+      restartAutoSlide();
+    });
+
+    carouselDots.addEventListener('click', (event) => {
+      const dot = event.target.closest('.dot');
+      if (!dot) return;
+      goToSlide(Number(dot.dataset.index));
+      restartAutoSlide();
+    });
+
+    carousel.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+    carousel.addEventListener('mouseleave', restartAutoSlide);
+
+    function createFeedItems(page) {
+      return Array.from({ length: 8 }, (_, index) => {
+        const number = page * 8 + index + 1;
+        return {
+          title: `Feed item ${number}`,
+          body: 'This content is appended when the viewport reaches the bottom. The request is simulated with setTimeout.',
+          time: `${number} min ago`,
+        };
+      });
+    }
+
+    function addSkeletons(count = 3) {
+      const fragment = document.createDocumentFragment();
+      for (let index = 0; index < count; index += 1) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'skeleton';
+        skeleton.innerHTML = `
+          <div class="skeleton-line long"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line short"></div>
+        `;
+        fragment.append(skeleton);
+      }
+      feedList.append(fragment);
+    }
+
+    function renderFeedItems(items) {
+      const fragment = document.createDocumentFragment();
+      items.forEach((item) => {
+        const article = document.createElement('article');
+        article.className = 'feed-card';
+        article.innerHTML = `
+          <h3>${item.title}</h3>
+          <p>${item.body}</p>
+          <div class="meta"><span>Auto loaded content</span><span>${item.time}</span></div>
+        `;
+        fragment.append(article);
+      });
+      feedList.append(fragment);
+    }
+
+    function loadMoreFeed() {
+      if (isLoading || !canLoadMore) return;
+      isLoading = true;
+      feedStatus.innerHTML = '<span class="spinner"></span><span>Loading more items...</span>';
+      addSkeletons();
+
+      window.setTimeout(() => {
+        feedList.querySelectorAll('.skeleton').forEach((node) => node.remove());
+        feedPage += 1;
+        renderFeedItems(createFeedItems(feedPage));
+        isLoading = false;
+        feedStatus.textContent = feedPage >= 4 ? 'No more items to load.' : 'Scroll near the bottom to load more items.';
+        if (feedPage >= 4) {
+          canLoadMore = false;
+        }
+      }, 1200);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        loadMoreFeed();
+      }
+    }, { root: feedViewport, threshold: 0.1 });
+
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    feedList.after(sentinel);
+    observer.observe(sentinel);
+
+    feedViewport.addEventListener('scroll', () => {
+      const nearBottom = feedViewport.scrollTop + feedViewport.clientHeight >= feedViewport.scrollHeight - 220;
+      if (nearBottom) loadMoreFeed();
+    });
+
+    renderCarousel();
+    restartAutoSlide();
+    renderFeedItems(createFeedItems(feedPage));
+  </script>
+</body>
+</html>

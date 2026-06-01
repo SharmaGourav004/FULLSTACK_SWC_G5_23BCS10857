@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q2 - Inputs and Validation</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --card: #ffffff;
+      --text: #1d2730;
+      --muted: #5f6a73;
+      --line: rgba(29, 39, 48, 0.12);
+      --accent: #256d63;
+      --warn: #c7761f;
+      --danger: #c43d3d;
+      --shadow: 0 16px 40px rgba(29, 39, 48, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 109, 99, 0.1), transparent 30%),
+        linear-gradient(135deg, #f8f3eb, #eef5f1);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(37, 109, 99, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel { overflow: hidden; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(37,109,99,0.07), rgba(199,118,31,0.05));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    textarea,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea { min-height: 130px; resize: vertical; }
+
+    textarea.warn,
+    input.warn { border-color: rgba(199, 118, 31, 0.45); background: rgba(199, 118, 31, 0.04); }
+    textarea.danger { border-color: rgba(196, 61, 61, 0.45); background: rgba(196, 61, 61, 0.04); }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .row { display: grid; gap: 10px; }
+    .stack { display: grid; gap: 12px; }
+    .counter { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.9rem; }
+    .helper { color: var(--muted); font-size: 0.9rem; }
+    .helper.warn { color: var(--warn); }
+    .helper.danger { color: var(--danger); }
+    .status { font-weight: 700; }
+    .status.warn { color: var(--warn); }
+    .status.danger { color: var(--danger); }
+
+    .error {
+      min-height: 18px;
+      color: var(--danger);
+      font-size: 0.88rem;
+    }
+
+    .search-results {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .submitted {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .submitted article {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+
+    @media (max-width: 1080px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .page { width: min(100% - 16px, 1180px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q2</span>
+      <h1>Inputs, validation, and live feedback</h1>
+      <p class="lead">This page combines a character-limited composer, an inline validation form, and a debounced search filter.</p>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Character-limited textarea</h2>
+          <p>Limit the content to 200 characters and warn early.</p>
+        </div>
+        <div class="panel-body stack">
+          <textarea id="composer" maxlength="200" placeholder="Share an update or review..."></textarea>
+          <div class="counter">
+            <span id="composerHint" class="helper">Keep it concise.</span>
+            <span><strong id="remainingCount">200</strong> characters left</span>
+          </div>
+          <button id="submitComposer" type="button">Submit text</button>
+          <div id="composerFeed" class="submitted"></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Reusable validation form</h2>
+          <p>Email, password strength, and required fields.</p>
+        </div>
+        <div class="panel-body">
+          <form id="validationForm" class="stack" novalidate>
+            <div class="row">
+              <label for="fullName">Full name</label>
+              <input id="fullName" type="text" placeholder="Your full name" />
+              <div class="error" data-error-for="fullName"></div>
+            </div>
+            <div class="row">
+              <label for="email">Email</label>
+              <input id="email" type="email" placeholder="name@example.com" />
+              <div class="error" data-error-for="email"></div>
+            </div>
+            <div class="row">
+              <label for="password">Password</label>
+              <input id="password" type="password" placeholder="At least 8 characters" />
+              <div class="error" data-error-for="password"></div>
+            </div>
+            <button type="submit">Create account</button>
+          </form>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Debounced live search</h2>
+          <p>Filter without recomputing on every key press.</p>
+        </div>
+        <div class="panel-body">
+          <input id="searchInput" type="search" placeholder="Search products or topics" />
+          <div id="searchMeta" class="helper" style="margin-top: 10px;">Type to search the sample list.</div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const composer = document.getElementById('composer');
+    const remainingCount = document.getElementById('remainingCount');
+    const composerHint = document.getElementById('composerHint');
+    const submitComposer = document.getElementById('submitComposer');
+    const composerFeed = document.getElementById('composerFeed');
+    const validationForm = document.getElementById('validationForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchMeta = document.getElementById('searchMeta');
+
+    const sampleItems = [
+      'Noise cancelling headphones',
+      'Wireless keyboard',
+      'Mechanical pencil set',
+      'Project planning workshop',
+      'Dashboard analytics template',
+      'Product review summary',
+      'Daily task checklist',
+      'Responsive landing page',
+      'JavaScript interview notes',
+      'Customer support playbook',
+    ];
+
+    const submittedPosts = [];
+
+    function updateComposerState() {
+      const value = composer.value;
+      const remaining = 200 - value.length;
+      remainingCount.textContent = String(Math.max(0, remaining));
+
+      composer.classList.toggle('warn', value.length >= 160 && value.length < 200);
+      composer.classList.toggle('danger', value.length >= 200);
+
+      composerHint.textContent = value.length >= 200
+        ? 'Character limit reached.'
+        : value.length >= 160
+          ? 'You are near the limit.'
+          : 'Keep it concise.';
+
+      composerHint.className = 'helper ' + (value.length >= 200 ? 'danger' : value.length >= 160 ? 'warn' : '');
+    }
+
+    composer.addEventListener('input', updateComposerState);
+    composer.addEventListener('keydown', (event) => {
+      if (composer.value.length >= 200 && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+      }
+    });
+
+    submitComposer.addEventListener('click', () => {
+      const text = composer.value.trim();
+      if (!text) return;
+      submittedPosts.unshift(text);
+      composer.value = '';
+      updateComposerState();
+      renderComposerFeed();
+    });
+
+    function renderComposerFeed() {
+      composerFeed.innerHTML = submittedPosts.length
+        ? submittedPosts.map((text) => `<article><strong>Submitted text</strong><p style="margin: 8px 0 0; color: var(--muted);">${text}</p></article>`).join('')
+        : '<div class="helper">Submitted text will appear here.</div>';
+    }
+
+    function setError(id, message) {
+      const error = document.querySelector(`[data-error-for="${id}"]`);
+      error.textContent = message;
+    }
+
+    function validateEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    function validatePassword(value) {
+      const lengthOk = value.length >= 8;
+      const specialOk = /[^A-Za-z0-9]/.test(value);
+      return lengthOk && specialOk;
+    }
+
+    validationForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const fullName = document.getElementById('fullName');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      let valid = true;
+
+      [fullName, email, password].forEach((field) => setError(field.id, ''));
+
+      if (!fullName.value.trim()) {
+        setError('fullName', 'Full name is required.');
+        valid = false;
+      }
+      if (!email.value.trim()) {
+        setError('email', 'Email is required.');
+        valid = false;
+      } else if (!validateEmail(email.value.trim())) {
+        setError('email', 'Enter a valid email address.');
+        valid = false;
+      }
+      if (!password.value.trim()) {
+        setError('password', 'Password is required.');
+        valid = false;
+      } else if (!validatePassword(password.value.trim())) {
+        setError('password', 'Use 8+ characters and at least one special character.');
+        valid = false;
+      }
+
+      if (valid) {
+        alert('Form submitted successfully');
+        validationForm.reset();
+      }
+    });
+
+    const debounce = (fn, delay = 300) => {
+      let timerId;
+      return (...args) => {
+        clearTimeout(timerId);
+        timerId = window.setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const renderSearch = debounce(() => {
+      const query = searchInput.value.trim().toLowerCase();
+      const filtered = sampleItems.filter((item) => item.toLowerCase().includes(query));
+      searchMeta.textContent = query
+        ? `${filtered.length} result${filtered.length === 1 ? '' : 's'} found.`
+        : 'Type to search the sample list.';
+      searchResults.innerHTML = filtered.length
+        ? filtered.map((item) => `<div class="result"><strong>${item}</strong><span class="helper">Matched</span></div>`).join('')
+        : '<div class="helper">No matching results.</div>';
+    }, 300);
+
+    searchInput.addEventListener('input', renderSearch);
+
+    updateComposerState();
+    renderComposerFeed();
+    renderSearch();
+  </script>
+</body>
+</html>

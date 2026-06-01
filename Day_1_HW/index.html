@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Questions Hub</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe8;
+      --bg2: #e8f1ee;
+      --card: rgba(255, 255, 255, 0.86);
+      --text: #162029;
+      --muted: #5a6872;
+      --line: rgba(22, 32, 41, 0.12);
+      --accent: #1f7a6b;
+      --accent2: #c35b2f;
+      --shadow: 0 24px 60px rgba(31, 122, 107, 0.14);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(31, 122, 107, 0.2), transparent 35%),
+        radial-gradient(circle at right, rgba(195, 91, 47, 0.14), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(31, 122, 107, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 4vw, 4rem);
+      line-height: 1;
+    }
+
+    p {
+      margin: 14px 0 0;
+      max-width: 70ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.65;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 100%;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 12px 28px rgba(22, 32, 41, 0.08);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 38px rgba(22, 32, 41, 0.12);
+    }
+
+    .card h2 { margin: 0; font-size: 1.35rem; }
+    .card p { margin: 0; }
+
+    .tag {
+      display: inline-flex;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(195, 91, 47, 0.1);
+      color: var(--accent2);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .shell { width: min(100% - 20px, 1120px); padding-top: 20px; }
+      .hero { padding: 20px; border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Practice Questions Workspace</div>
+      <h1>Interactive UI exercises, grouped into Q1 to Q4 folders.</h1>
+      <p>
+        Open any folder below to explore the related demos. Each folder is self-contained so the pages can be viewed directly from the workspace without a build step.
+      </p>
+
+      <div class="grid">
+        <a class="card" href="./Q1/index.html">
+          <div class="tag">Q1</div>
+          <h2>Task management and list interactions</h2>
+          <p>Todo app, tab navigation, and a large event-delegated list.</p>
+        </a>
+        <a class="card" href="./Q2/index.html">
+          <div class="tag">Q2</div>
+          <h2>Input controls and live validation</h2>
+          <p>Character-limited composer, inline form validation, and debounced search.</p>
+        </a>
+        <a class="card" href="./Q3/index.html">
+          <div class="tag">Q3</div>
+          <h2>Carousel and infinite loading patterns</h2>
+          <p>Auto-sliding image carousel, feed loading, and CSS skeleton states.</p>
+        </a>
+        <a class="card" href="./Q4/index.html">
+          <div class="tag">Q4</div>
+          <h2>Board, dashboard, and commerce layouts</h2>
+          <p>Kanban drag and drop, analytics cards, and a Tailwind product listing page.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
