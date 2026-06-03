@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q9 - Reusable Form Validation</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe8;
+      --bg2: #eef4f0;
+      --card: rgba(255, 255, 255, 0.9);
+      --text: #18222b;
+      --muted: #5c6972;
+      --line: rgba(24, 34, 43, 0.12);
+      --accent: #186f61;
+      --accent-soft: rgba(24, 111, 97, 0.1);
+      --danger: #b03d2f;
+      --shadow: 0 20px 48px rgba(24, 34, 43, 0.09);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(24, 111, 97, 0.14), transparent 28%),
+        radial-gradient(circle at right, rgba(176, 61, 47, 0.1), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(24,111,97,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+    }
+
+    label { font-weight: 700; }
+    input {
+      width: 100%;
+      border: 1px solid rgba(24, 34, 43, 0.14);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    input:focus {
+      border-color: rgba(24, 111, 97, 0.55);
+      box-shadow: 0 0 0 4px rgba(24, 111, 97, 0.1);
+    }
+
+    .error {
+      min-height: 18px;
+      color: var(--danger);
+      font-size: 0.88rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    button {
+      justify-self: start;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(24, 111, 97, 0.2);
+    }
+
+    .status {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(24, 111, 97, 0.08);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .rule {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(24, 34, 43, 0.03);
+      border: 1px solid rgba(24, 34, 43, 0.08);
+    }
+
+    .rule strong { display: block; margin-bottom: 4px; }
+    .rule span { color: var(--muted); line-height: 1.55; }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1080px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .rules { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Q9</div>
+      <h1>Reusable form validation system</h1>
+      <p class="lead">This login-style form validates email format, password strength, and required fields, showing inline errors and blocking submission until every rule passes.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Sign in form</h2>
+        <p>Validation logic is reusable and driven by a field configuration map.</p>
+      </div>
+      <div class="panel-body">
+        <form id="validationForm" novalidate>
+          <div class="row">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" placeholder="Enter your full name" />
+            <div class="error" data-error-for="fullName"></div>
+          </div>
+
+          <div class="row">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" placeholder="name@example.com" />
+            <div class="error" data-error-for="email"></div>
+          </div>
+
+          <div class="row">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Create a secure password" />
+            <div class="error" data-error-for="password"></div>
+          </div>
+
+          <div class="row">
+            <label for="company">Company</label>
+            <input id="company" name="company" type="text" placeholder="Your company name" />
+            <div class="error" data-error-for="company"></div>
+          </div>
+
+          <div class="status" id="formStatus">Fill the form and submit to see validation in action.</div>
+          <button type="submit">Submit</button>
+        </form>
+
+        <div class="rules">
+          <div class="rule"><strong>Email format</strong><span>Must include a valid structure like name@example.com.</span></div>
+          <div class="rule"><strong>Password strength</strong><span>Minimum 8 characters with at least one special character.</span></div>
+          <div class="rule"><strong>Required fields</strong><span>Fields cannot be left blank or contain only spaces.</span></div>
+          <div class="rule"><strong>Inline feedback</strong><span>Each field shows its own message directly below the input.</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('validationForm');
+    const formStatus = document.getElementById('formStatus');
+    const fields = ['fullName', 'email', 'password', 'company'];
+
+    const validators = {
+      fullName: (value) => value.trim() ? '' : 'Full name is required.',
+      company: (value) => value.trim() ? '' : 'Company is required.',
+      email: (value) => {
+        if (!value.trim()) return 'Email is required.';
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(value.trim()) ? '' : 'Enter a valid email address.';
+      },
+      password: (value) => {
+        if (!value.trim()) return 'Password is required.';
+        if (value.length < 8) return 'Password must be at least 8 characters long.';
+        if (!/[!@#$%^&*(),.?":{}|<>\[\]\\\/;'-]/.test(value)) return 'Password must include at least one special character.';
+        return '';
+      },
+    };
+
+    function setError(fieldName, message) {
+      const errorBox = document.querySelector(`[data-error-for="${fieldName}"]`);
+      errorBox.textContent = message;
+    }
+
+    function validateField(fieldName) {
+      const input = document.getElementById(fieldName);
+      const message = validators[fieldName](input.value);
+      setError(fieldName, message);
+      return !message;
+    }
+
+    function validateForm() {
+      return fields.map(validateField).every(Boolean);
+    }
+
+    fields.forEach((fieldName) => {
+      document.getElementById(fieldName).addEventListener('input', () => {
+        validateField(fieldName);
+      });
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const valid = validateForm();
+      if (!valid) {
+        formStatus.textContent = 'Please fix the errors before submitting.';
+        formStatus.style.background = 'rgba(176, 61, 47, 0.08)';
+        formStatus.style.color = 'var(--danger)';
+        return;
+      }
+
+      formStatus.textContent = 'Validation passed. Form submission is allowed.';
+      formStatus.style.background = 'rgba(24, 111, 97, 0.08)';
+      formStatus.style.color = 'var(--accent)';
+      form.reset();
+      fields.forEach((fieldName) => setError(fieldName, ''));
+    });
+  </script>
+</body>
+</html>

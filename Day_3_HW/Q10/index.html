@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q10 - Infinite Scrolling Feed</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f1ede6;
+      --bg2: #eef5f1;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #18222b;
+      --muted: #5b6972;
+      --line: rgba(24, 34, 43, 0.12);
+      --accent: #176f61;
+      --accent-soft: rgba(23, 111, 97, 0.1);
+      --shadow: 0 20px 48px rgba(24, 34, 43, 0.09);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(23, 111, 97, 0.12), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(23,111,97,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .feed {
+      height: 68vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .feed-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card,
+    .loading,
+    .end {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+    }
+
+    .card h3 { margin: 0; font-size: 1rem; }
+    .card p { margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .loading,
+    .end {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(23, 111, 97, 0.18);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1080px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .feed { height: 72vh; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q10</span>
+      <h1>Infinite scrolling feed</h1>
+      <p class="lead">Scroll near the bottom to load more posts automatically. The demo simulates API calls with setTimeout, shows a loading indicator, and prevents duplicate fetches during fast scrolling.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Social-style content feed</h2>
+        <p>Additional items load as the viewport approaches the bottom of the list.</p>
+      </div>
+      <div class="panel-body">
+        <div id="feed" class="feed">
+          <div id="feedList" class="feed-list"></div>
+          <div id="feedStatus" class="loading"><span class="spinner"></span><span>Loading more items...</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const feed = document.getElementById('feed');
+    const feedList = document.getElementById('feedList');
+    const feedStatus = document.getElementById('feedStatus');
+
+    let page = 0;
+    let isLoading = false;
+    let hasMore = true;
+    const pageSize = 8;
+    const maxPages = 6;
+
+    function createItems(pageNumber) {
+      return Array.from({ length: pageSize }, (_, index) => {
+        const number = pageNumber * pageSize + index + 1;
+        return {
+          id: `post-${number}`,
+          title: `Feed item ${number}`,
+          body: 'This item is generated from a simulated API response and appended to the feed when the user scrolls near the bottom.',
+          time: `${number} min ago`
+        };
+      });
+    }
+
+    function renderItems(items) {
+      const markup = items.map((item) => `
+        <article class="card">
+          <h3>${item.title}</h3>
+          <p>${item.body}</p>
+          <div class="meta"><span>Linked content</span><span>${item.time}</span></div>
+        </article>
+      `).join('');
+      feedList.insertAdjacentHTML('beforeend', markup);
+    }
+
+    function setStatusLoading(text) {
+      feedStatus.className = 'loading';
+      feedStatus.innerHTML = `<span class="spinner"></span><span>${text}</span>`;
+    }
+
+    function setStatusEnd(text) {
+      feedStatus.className = 'end';
+      feedStatus.innerHTML = `<span>${text}</span>`;
+    }
+
+    function loadMore() {
+      if (isLoading || !hasMore) return;
+      isLoading = true;
+      setStatusLoading('Loading more items...');
+
+      window.setTimeout(() => {
+        const nextPage = page + 1;
+        const items = createItems(page);
+        renderItems(items);
+        page = nextPage;
+        isLoading = false;
+
+        if (page >= maxPages) {
+          hasMore = false;
+          setStatusEnd('No more items to load.');
+        }
+      }, 900);
+    }
+
+    function shouldLoadMore() {
+      const threshold = 240;
+      return feed.scrollTop + feed.clientHeight >= feed.scrollHeight - threshold;
+    }
+
+    feed.addEventListener('scroll', () => {
+      if (shouldLoadMore()) loadMore();
+    });
+
+    renderItems(createItems(page));
+    page += 1;
+    loadMore();
+  </script>
+</body>
+</html>

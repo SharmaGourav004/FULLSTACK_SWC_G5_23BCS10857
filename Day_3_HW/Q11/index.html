@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q11 - Optimized Search Feature</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3efe8;
+      --bg2: #eef5f1;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #18222b;
+      --muted: #5b6972;
+      --line: rgba(24, 34, 43, 0.12);
+      --accent: #176f61;
+      --accent-soft: rgba(23, 111, 97, 0.1);
+      --shadow: 0 20px 48px rgba(24, 34, 43, 0.09);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(23, 111, 97, 0.12), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(23,111,97,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid rgba(24, 34, 43, 0.12);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      font: inherit;
+      background: transparent;
+    }
+
+    .count {
+      display: inline-flex;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(23, 111, 97, 0.08);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .item {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .item h3 { margin: 0; font-size: 1rem; }
+    .item p { margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+
+    .empty {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(24, 34, 43, 0.16);
+      border-radius: 18px;
+      background: rgba(24, 34, 43, 0.03);
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1080px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">Q11</span>
+      <h1>Optimized search feature</h1>
+      <p class="lead">Type to filter the list in real time. A 300ms debounce reduces unnecessary computations while still feeling responsive.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Live filtering list</h2>
+        <p>Designed for product search, directory lookup, and quick filtering flows.</p>
+      </div>
+      <div class="panel-body">
+        <label class="search-box" aria-label="Search items">
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="Filter items by name or description" />
+        </label>
+        <div class="count" id="resultCount">0 results</div>
+        <div id="results" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const results = document.getElementById('results');
+    const resultCount = document.getElementById('resultCount');
+
+    const data = Array.from({ length: 180 }, (_, index) => ({
+      title: `Product item ${index + 1}`,
+      detail: `Useful listing entry number ${index + 1} for testing live filtering.`
+    }));
+
+    let query = '';
+    let debounceTimer = null;
+
+    function renderList() {
+      const filtered = data.filter((item) => {
+        const text = `${item.title} ${item.detail}`.toLowerCase();
+        return text.includes(query);
+      });
+
+      resultCount.textContent = `${filtered.length} result${filtered.length === 1 ? '' : 's'}`;
+
+      if (!filtered.length) {
+        results.innerHTML = '<div class="empty">No matching items found.</div>';
+        return;
+      }
+
+      results.innerHTML = filtered.map((item) => `
+        <article class="item">
+          <h3>${item.title}</h3>
+          <p>${item.detail}</p>
+        </article>
+      `).join('');
+    }
+
+    searchInput.addEventListener('input', (event) => {
+      const value = event.target.value.toLowerCase();
+      clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        query = value.trim();
+        renderList();
+      }, 300);
+    });
+
+    renderList();
+  </script>
+</body>
+</html>

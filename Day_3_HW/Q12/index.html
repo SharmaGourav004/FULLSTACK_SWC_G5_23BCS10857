@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q12 - Amazon Product Listing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f3eee6] text-slate-900">
+  <main class="mx-auto w-[min(1280px,calc(100%-1rem))] py-4 sm:py-6 lg:py-8">
+    <section class="mb-4 overflow-hidden rounded-3xl border border-slate-200 bg-white/90 shadow-[0_20px_48px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div class="bg-gradient-to-r from-[#1f7667]/10 to-[#c35d31]/10 px-4 py-3 sm:px-6">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1f7667] text-lg font-black text-white">A</div>
+            <div>
+              <div class="text-lg font-black tracking-tight">Amazon Style Store</div>
+              <div class="text-sm text-slate-500">Responsive product discovery page</div>
+            </div>
+          </div>
+
+          <div class="flex flex-1 flex-col gap-3 lg:max-w-2xl lg:flex-row lg:items-center">
+            <div class="flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <span class="text-slate-400">Search</span>
+              <input id="amazonSearch" class="w-full border-0 bg-transparent outline-none" placeholder="Search products" />
+            </div>
+            <button class="rounded-2xl bg-[#1f7667] px-4 py-3 font-bold text-white shadow-sm">Cart (3)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-4 lg:grid-cols-[280px_1fr]">
+      <aside class="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
+        <div class="space-y-6">
+          <div>
+            <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-slate-500">Price</div>
+            <div id="priceFilters" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div>
+            <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-slate-500">Category</div>
+            <div id="categoryFilters" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div>
+            <div class="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-slate-500">Rating</div>
+            <input id="ratingFilter" type="range" min="0" max="5" step="0.5" value="0" class="w-full accent-[#1f7667]" />
+            <div class="mt-2 text-sm text-slate-500">Minimum rating: <span id="ratingValue">0</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="rounded-3xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)] overflow-hidden">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div class="text-lg font-black tracking-tight">Featured Products</div>
+              <div class="text-sm text-slate-500">Tailwind-based responsive cards</div>
+            </div>
+            <div id="productCount" class="text-sm font-semibold text-slate-500"></div>
+          </div>
+        </div>
+        <div id="productGrid" class="grid gap-4 p-4 sm:p-6 md:grid-cols-2 xl:grid-cols-3"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const products = [
+      { name: 'Noise Cancelling Headphones', price: 129, rating: 4.6, category: 'Audio', image: 'https://picsum.photos/seed/amz-1/600/400' },
+      { name: 'Ergonomic Office Chair', price: 219, rating: 4.4, category: 'Furniture', image: 'https://picsum.photos/seed/amz-2/600/400' },
+      { name: 'Smart LED Lamp', price: 39, rating: 4.2, category: 'Home', image: 'https://picsum.photos/seed/amz-3/600/400' },
+      { name: '4K Action Camera', price: 179, rating: 4.7, category: 'Electronics', image: 'https://picsum.photos/seed/amz-4/600/400' },
+      { name: 'Travel Backpack', price: 89, rating: 4.5, category: 'Travel', image: 'https://picsum.photos/seed/amz-5/600/400' },
+      { name: 'Smart Watch', price: 149, rating: 4.3, category: 'Electronics', image: 'https://picsum.photos/seed/amz-6/600/400' },
+      { name: 'Coffee Maker', price: 74, rating: 4.1, category: 'Kitchen', image: 'https://picsum.photos/seed/amz-7/600/400' },
+      { name: 'Standing Desk', price: 349, rating: 4.8, category: 'Furniture', image: 'https://picsum.photos/seed/amz-8/600/400' }
+    ];
+
+    const categories = ['All', ...new Set(products.map((product) => product.category))];
+    const priceRanges = [
+      { label: 'All', min: 0, max: Infinity },
+      { label: 'Under $100', min: 0, max: 100 },
+      { label: '$100 - $200', min: 100, max: 200 },
+      { label: 'Above $200', min: 200, max: Infinity }
+    ];
+
+    const priceFilters = document.getElementById('priceFilters');
+    const categoryFilters = document.getElementById('categoryFilters');
+    const ratingFilter = document.getElementById('ratingFilter');
+    const ratingValue = document.getElementById('ratingValue');
+    const productGrid = document.getElementById('productGrid');
+    const productCount = document.getElementById('productCount');
+    const amazonSearch = document.getElementById('amazonSearch');
+
+    let activeCategory = 'All';
+    let activePrice = 'All';
+    let minRating = 0;
+    let searchQuery = '';
+
+    function chipClasses(active) {
+      return active
+        ? 'rounded-full border border-[#1f7667] bg-[#1f7667] px-3 py-2 text-sm font-bold text-white'
+        : 'rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:-translate-y-px hover:shadow-sm';
+    }
+
+    function renderFilters() {
+      priceFilters.innerHTML = priceRanges.map((range) => `
+        <button type="button" class="${chipClasses(activePrice === range.label)}" data-price="${range.label}">${range.label}</button>
+      `).join('');
+
+      categoryFilters.innerHTML = categories.map((category) => `
+        <button type="button" class="${chipClasses(activeCategory === category)}" data-category="${category}">${category}</button>
+      `).join('');
+    }
+
+    function getFilteredProducts() {
+      const priceRange = priceRanges.find((range) => range.label === activePrice) || priceRanges[0];
+      return products.filter((product) => {
+        const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
+        const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
+        const matchesRating = product.rating >= minRating;
+        const matchesQuery = `${product.name} ${product.category}`.toLowerCase().includes(searchQuery);
+        return matchesPrice && matchesCategory && matchesRating && matchesQuery;
+      });
+    }
+
+    function renderProducts() {
+      const filtered = getFilteredProducts();
+      productCount.textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'} found`;
+
+      productGrid.innerHTML = filtered.map((product) => `
+        <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <img src="${product.image}" alt="${product.name}" class="h-44 w-full object-cover" />
+          <div class="p-4">
+            <div class="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">${product.category}</div>
+            <h3 class="text-lg font-bold">${product.name}</h3>
+            <div class="mt-2 flex items-center justify-between gap-4">
+              <div class="text-xl font-black text-[#1f7667]">$${product.price}</div>
+              <div class="text-sm font-semibold text-slate-600">⭐ ${product.rating}</div>
+            </div>
+            <button class="mt-4 w-full rounded-2xl bg-[#f3eee6] px-4 py-3 font-bold text-slate-900 transition hover:bg-[#e8dfd0]">Add to cart</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    priceFilters.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-price]');
+      if (!button) return;
+      activePrice = button.dataset.price;
+      renderFilters();
+      renderProducts();
+    });
+
+    categoryFilters.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-category]');
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      renderFilters();
+      renderProducts();
+    });
+
+    ratingFilter.addEventListener('input', (event) => {
+      minRating = Number(event.target.value);
+      ratingValue.textContent = minRating;
+      renderProducts();
+    });
+
+    amazonSearch.addEventListener('input', (event) => {
+      searchQuery = event.target.value.trim().toLowerCase();
+      renderProducts();
+    });
+
+    renderFilters();
+    renderProducts();
+  </script>
+</body>
+</html>
