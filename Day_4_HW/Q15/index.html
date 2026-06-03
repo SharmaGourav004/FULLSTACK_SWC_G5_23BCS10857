@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q15 - Autocomplete Search</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fff7ed;
+      --bg2: #f5f3ff;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #111827;
+      --muted: #6b7280;
+      --line: rgba(17, 24, 39, 0.12);
+      --accent: #ea580c;
+      --accent2: #7c3aed;
+      --highlight: rgba(234, 88, 12, 0.16);
+      --shadow: 0 24px 60px rgba(124, 58, 237, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(234, 88, 12, 0.12), transparent 24%),
+        radial-gradient(circle at 88% 18%, rgba(124, 58, 237, 0.14), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .wrap {
+      width: min(980px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    .panel {
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(234, 88, 12, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1; }
+    .lead { margin: 12px 0 0; color: var(--muted); line-height: 1.65; max-width: 68ch; }
+
+    .search-shell {
+      margin-top: 20px;
+      position: relative;
+      border-radius: 26px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,0.88));
+      border: 1px solid var(--line);
+    }
+
+    .field {
+      width: 100%;
+      border: 2px solid rgba(124, 58, 237, 0.14);
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 1.05rem;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+      background: white;
+    }
+
+    .field:focus {
+      border-color: rgba(234, 88, 12, 0.45);
+      box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+    }
+
+    .hint {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .dropdown {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: calc(100% - 8px);
+      margin: 0;
+      padding: 8px;
+      list-style: none;
+      background: white;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 32px rgba(17, 24, 39, 0.1);
+      max-height: 320px;
+      overflow: auto;
+      z-index: 5;
+    }
+
+    .dropdown[hidden] { display: none; }
+
+    .option {
+      padding: 12px 14px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .option + .option { margin-top: 4px; }
+    .option.active, .option:hover { background: var(--highlight); }
+    .option .type { color: var(--muted); font-size: 0.92rem; }
+
+    .selected {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid rgba(124, 58, 237, 0.14);
+      color: #4c1d95;
+      font-weight: 700;
+    }
+
+    .empty {
+      margin-top: 16px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 16px, 980px); padding-top: 16px; }
+      .panel, .search-shell { padding: 18px; border-radius: 22px; }
+      .dropdown { left: 18px; right: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <div class="eyebrow">Q15 - Autocomplete</div>
+      <h1>Google-style suggestion dropdown</h1>
+      <p class="lead">Type to filter suggestions, use Arrow Up and Arrow Down to move across the list, press Enter to choose the highlighted item, or click any suggestion directly.</p>
+
+      <div class="search-shell">
+        <input id="searchInput" class="field" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestionList" placeholder="Search foods, cities, and products..." />
+        <ul id="suggestionList" class="dropdown" role="listbox" hidden></ul>
+        <p class="hint">Keyboard support: Arrow Up, Arrow Down, Enter, and Escape.</p>
+      </div>
+
+      <div id="selection" class="selected">Selected value: none</div>
+      <div id="emptyState" class="empty">Start typing to see matching suggestions.</div>
+    </section>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const suggestionList = document.getElementById('suggestionList');
+    const selection = document.getElementById('selection');
+    const emptyState = document.getElementById('emptyState');
+
+    const suggestions = [
+      { label: 'Apple', type: 'fruit' },
+      { label: 'Apricot', type: 'fruit' },
+      { label: 'Bangalore', type: 'city' },
+      { label: 'Berlin', type: 'city' },
+      { label: 'Blueberry Muffin', type: 'dessert' },
+      { label: 'Burger', type: 'food' },
+      { label: 'Chennai', type: 'city' },
+      { label: 'Cappuccino', type: 'drink' },
+      { label: 'Chicken Wrap', type: 'food' },
+      { label: 'Delhi', type: 'city' },
+      { label: 'Dragon Fruit', type: 'fruit' },
+      { label: 'Dosa', type: 'food' },
+      { label: 'Hyderabad', type: 'city' },
+      { label: 'Hot Chocolate', type: 'drink' },
+      { label: 'Mumbai', type: 'city' },
+      { label: 'Mango Lassi', type: 'drink' },
+      { label: 'Pizza', type: 'food' },
+      { label: 'Pune', type: 'city' },
+      { label: 'Samosa', type: 'snack' },
+      { label: 'Strawberry', type: 'fruit' }
+    ];
+
+    let filtered = [];
+    let activeIndex = -1;
+
+    function closeDropdown() {
+      suggestionList.hidden = true;
+      searchInput.setAttribute('aria-expanded', 'false');
+    }
+
+    function renderDropdown() {
+      suggestionList.innerHTML = filtered.map((item, index) => `
+        <li class="option ${index === activeIndex ? 'active' : ''}" role="option" aria-selected="${index === activeIndex}" data-index="${index}">
+          <span>${item.label}</span>
+          <span class="type">${item.type}</span>
+        </li>
+      `).join('');
+
+      suggestionList.hidden = filtered.length === 0;
+      searchInput.setAttribute('aria-expanded', String(filtered.length > 0));
+      emptyState.textContent = filtered.length === 0 && searchInput.value.trim() ? 'No matches found.' : 'Start typing to see matching suggestions.';
+    }
+
+    function updateSelection(value) {
+      selection.textContent = `Selected value: ${value}`;
+      searchInput.value = value;
+      activeIndex = -1;
+    }
+
+    function filterSuggestions(value) {
+      const query = value.trim().toLowerCase();
+      filtered = query
+        ? suggestions.filter(item => item.label.toLowerCase().includes(query))
+        : suggestions.slice(0, 6);
+      activeIndex = filtered.length ? 0 : -1;
+      renderDropdown();
+    }
+
+    searchInput.addEventListener('input', event => {
+      filterSuggestions(event.target.value);
+    });
+
+    searchInput.addEventListener('keydown', event => {
+      if (suggestionList.hidden && event.key !== 'Escape') return;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        activeIndex = filtered.length ? (activeIndex + 1) % filtered.length : -1;
+        renderDropdown();
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        activeIndex = filtered.length ? (activeIndex - 1 + filtered.length) % filtered.length : -1;
+        renderDropdown();
+      }
+
+      if (event.key === 'Enter' && activeIndex >= 0) {
+        event.preventDefault();
+        updateSelection(filtered[activeIndex].label);
+        closeDropdown();
+      }
+
+      if (event.key === 'Escape') {
+        closeDropdown();
+      }
+    });
+
+    suggestionList.addEventListener('mousedown', event => {
+      const option = event.target.closest('.option');
+      if (!option) return;
+      const picked = filtered[Number(option.dataset.index)];
+      updateSelection(picked.label);
+      closeDropdown();
+    });
+
+    searchInput.addEventListener('focus', () => {
+      if (!filtered.length) filterSuggestions(searchInput.value);
+      else renderDropdown();
+    });
+
+    searchInput.addEventListener('blur', () => {
+      setTimeout(closeDropdown, 120);
+    });
+
+    filterSuggestions('');
+  </script>
+</body>
+</html>

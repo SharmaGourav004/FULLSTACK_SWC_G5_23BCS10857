@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q16 - Restaurant Cart</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fff7ed;
+      --bg2: #eff6ff;
+      --text: #0f172a;
+      --muted: #5b6574;
+      --line: rgba(15, 23, 42, 0.12);
+      --card: rgba(255, 255, 255, 0.94);
+      --accent: #ea580c;
+      --accent2: #0f766e;
+      --accent3: #2563eb;
+      --success: #16a34a;
+      --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(234, 88, 12, 0.14), transparent 24%),
+        radial-gradient(circle at 90% 8%, rgba(37, 99, 235, 0.12), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .wrap {
+      width: min(1280px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    .hero {
+      padding: 24px;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(234, 88, 12, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1; }
+    .lead { margin: 12px 0 0; color: var(--muted); line-height: 1.65; max-width: 72ch; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 1.22rem;
+    }
+
+    .restaurants {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .restaurant {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      background: white;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .restaurant:hover, .restaurant.active {
+      transform: translateY(-2px);
+      border-color: rgba(234, 88, 12, 0.4);
+      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.09);
+    }
+
+    .restaurant h3 { margin: 0 0 6px; font-size: 1rem; }
+    .restaurant p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .menu-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: white;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .menu-card header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .menu-card h3 { margin: 0; font-size: 1.05rem; }
+    .menu-card .desc { margin: 4px 0 0; color: var(--muted); line-height: 1.5; font-size: 0.94rem; }
+    .price { color: var(--accent2); font-weight: 800; white-space: nowrap; }
+
+    .addons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .addon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.08);
+      border: 1px solid rgba(15, 118, 110, 0.14);
+      font-size: 0.9rem;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qty-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(37, 99, 235, 0.06);
+      border-radius: 999px;
+      padding: 6px;
+    }
+
+    .qty-picker button, .primary, .secondary, .icon-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .qty-picker button, .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    .primary, .secondary {
+      border-radius: 999px;
+      padding: 11px 15px;
+    }
+
+    .primary {
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      box-shadow: 0 12px 24px rgba(234, 88, 12, 0.24);
+    }
+
+    .secondary {
+      color: var(--accent3);
+      background: rgba(37, 99, 235, 0.08);
+    }
+
+    .cart-item {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      background: white;
+      margin-bottom: 12px;
+    }
+
+    .cart-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .cart-item h3 { margin: 0; font-size: 1rem; }
+    .cart-meta, .summary-line, .empty-state, .note { color: var(--muted); }
+    .cart-meta { margin-top: 6px; font-size: 0.92rem; line-height: 1.45; }
+
+    .cart-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    .summary {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 0.96rem;
+    }
+
+    .total {
+      margin-top: 12px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--accent2);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sticky {
+      position: sticky;
+      top: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(234, 88, 12, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .sticky { position: static; }
+    }
+
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 16px, 1280px); padding-top: 16px; }
+      .hero, .section { padding: 18px; border-radius: 22px; }
+      .restaurants, .menu-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Q16 - Restaurant cart flow</div>
+      <h1>Swiggy/Zomato style ordering with persistent cart</h1>
+      <p class="lead">Pick a restaurant, browse its menu, add items with add-ons, adjust quantities inside the cart, and keep the cart saved with localStorage.</p>
+
+      <div class="layout">
+        <section class="section">
+          <h2>Restaurants</h2>
+          <div id="restaurants" class="restaurants"></div>
+
+          <div class="badge" id="activeRestaurantBadge">Active restaurant</div>
+          <h2 id="menuTitle" style="margin-top: 12px;">Menu</h2>
+          <p class="note" id="menuNote"></p>
+          <div id="menuGrid" class="menu-grid"></div>
+        </section>
+
+        <aside class="section sticky">
+          <h2>Cart</h2>
+          <div id="cartItems"></div>
+
+          <div class="summary">
+            <div class="summary-line"><span>Items</span><strong id="itemCount">0</strong></div>
+            <div class="summary-line"><span>Subtotal</span><strong id="subtotal">₹0</strong></div>
+            <div class="summary-line"><span>Delivery fee</span><strong id="delivery">₹0</strong></div>
+            <div class="summary-line"><span>Taxes</span><strong id="taxes">₹0</strong></div>
+            <div class="total"><span>Total</span><span id="total">₹0</span></div>
+            <div class="cart-actions">
+              <button class="primary" id="checkoutBtn">Place order</button>
+              <button class="secondary" id="clearBtn">Clear cart</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const restaurants = [
+      {
+        id: 'spice-bowl',
+        name: 'Spice Bowl',
+        cuisine: 'North Indian, Tandoor',
+        rating: '4.6',
+        eta: '25 min',
+        menu: [
+          { id: 'paneer-butter-masala', name: 'Paneer Butter Masala', price: 220, desc: 'Creamy tomato gravy with soft paneer cubes.', addons: [{ id: 'extra-paneer', name: 'Extra paneer', price: 35 }, { id: 'garlic-naan', name: 'Garlic naan', price: 25 }] },
+          { id: 'butter-naan', name: 'Butter Naan Combo', price: 110, desc: 'Two soft butter naans served hot.', addons: [{ id: 'butter-drizzle', name: 'Extra butter', price: 15 }, { id: 'raita', name: 'Raita', price: 20 }] },
+          { id: 'dal-tadka', name: 'Dal Tadka', price: 180, desc: 'Tempered lentils with aromatic spices.', addons: [{ id: 'jeera-rice', name: 'Jeera rice', price: 40 }, { id: 'papad', name: 'Papad', price: 12 }] }
+        ]
+      },
+      {
+        id: 'green-leaf',
+        name: 'Green Leaf',
+        cuisine: 'Healthy Bowls, Salads',
+        rating: '4.4',
+        eta: '18 min',
+        menu: [
+          { id: 'quinoa-bowl', name: 'Quinoa Power Bowl', price: 260, desc: 'Protein-rich grains, vegetables, and seeds.', addons: [{ id: 'avocado', name: 'Avocado', price: 45 }, { id: 'tofu', name: 'Tofu', price: 40 }] },
+          { id: 'caesar-salad', name: 'Classic Caesar Salad', price: 210, desc: 'Crisp lettuce, parmesan, and croutons.', addons: [{ id: 'grilled-chicken', name: 'Grilled chicken', price: 60 }, { id: 'boiled-egg', name: 'Boiled egg', price: 25 }] },
+          { id: 'smoothie', name: 'Berry Smoothie', price: 140, desc: 'Cold blended berries with yogurt.', addons: [{ id: 'chia', name: 'Chia seeds', price: 18 }, { id: 'protein', name: 'Protein boost', price: 35 }] }
+        ]
+      },
+      {
+        id: 'crunch-lab',
+        name: 'Crunch Lab',
+        cuisine: 'Burgers, Fries, Shakes',
+        rating: '4.7',
+        eta: '20 min',
+        menu: [
+          { id: 'smash-burger', name: 'Smash Burger', price: 240, desc: 'Double patty burger with house sauce.', addons: [{ id: 'cheese', name: 'Extra cheese', price: 30 }, { id: 'jalapeno', name: 'Jalapeño', price: 18 }] },
+          { id: 'loaded-fries', name: 'Loaded Fries', price: 160, desc: 'Fries topped with cheese and sauce.', addons: [{ id: 'bacon', name: 'Crispy bacon', price: 40 }, { id: 'peri-peri', name: 'Peri peri dust', price: 12 }] },
+          { id: 'oreo-shake', name: 'Oreo Shake', price: 150, desc: 'Thick milkshake with Oreo crumble.', addons: [{ id: 'whipped-cream', name: 'Whipped cream', price: 15 }, { id: 'choco-sauce', name: 'Chocolate sauce', price: 20 }] }
+        ]
+      }
+    ];
+
+    const restaurantContainer = document.getElementById('restaurants');
+    const menuGrid = document.getElementById('menuGrid');
+    const menuTitle = document.getElementById('menuTitle');
+    const menuNote = document.getElementById('menuNote');
+    const cartItems = document.getElementById('cartItems');
+    const itemCount = document.getElementById('itemCount');
+    const subtotal = document.getElementById('subtotal');
+    const delivery = document.getElementById('delivery');
+    const taxes = document.getElementById('taxes');
+    const total = document.getElementById('total');
+    const clearBtn = document.getElementById('clearBtn');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const activeRestaurantBadge = document.getElementById('activeRestaurantBadge');
+
+    let activeRestaurantId = localStorage.getItem('q16_active_restaurant') || restaurants[0].id;
+    let cart = loadCart(activeRestaurantId);
+
+    function storageKey(id) {
+      return `q16_cart_${id}`;
+    }
+
+    function loadCart(restaurantId) {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey(restaurantId)) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCart() {
+      localStorage.setItem(storageKey(activeRestaurantId), JSON.stringify(cart));
+      localStorage.setItem('q16_active_restaurant', activeRestaurantId);
+    }
+
+    function money(value) {
+      return `₹${Math.round(value)}`;
+    }
+
+    function getRestaurant() {
+      return restaurants.find(item => item.id === activeRestaurantId) || restaurants[0];
+    }
+
+    function renderRestaurants() {
+      restaurantContainer.innerHTML = restaurants.map(restaurant => `
+        <article class="restaurant ${restaurant.id === activeRestaurantId ? 'active' : ''}" data-id="${restaurant.id}">
+          <h3>${restaurant.name}</h3>
+          <p>${restaurant.cuisine}</p>
+          <p>Rating ${restaurant.rating} • ${restaurant.eta}</p>
+        </article>
+      `).join('');
+    }
+
+    function renderMenu() {
+      const restaurant = getRestaurant();
+      menuTitle.textContent = `${restaurant.name} menu`;
+      menuNote.textContent = `${restaurant.cuisine} • Delivery estimate ${restaurant.eta}`;
+      activeRestaurantBadge.textContent = `Active restaurant: ${restaurant.name}`;
+
+      menuGrid.innerHTML = restaurant.menu.map(item => `
+        <article class="menu-card">
+          <header>
+            <div>
+              <h3>${item.name}</h3>
+              <p class="desc">${item.desc}</p>
+            </div>
+            <div class="price">${money(item.price)}</div>
+          </header>
+          <div class="addons">
+            ${item.addons.map(addon => `
+              <label class="addon"><input type="checkbox" data-menu-id="${item.id}" value="${addon.id}" data-addon-name="${addon.name}" data-addon-price="${addon.price}"> ${addon.name} +${money(addon.price)}</label>
+            `).join('')}
+          </div>
+          <div class="item-actions">
+            <div class="qty-picker">
+              <button type="button" data-action="decrease" data-menu-id="${item.id}">−</button>
+              <strong id="qty-${item.id}">1</strong>
+              <button type="button" data-action="increase" data-menu-id="${item.id}">+</button>
+            </div>
+            <button class="primary" type="button" data-action="add" data-menu-id="${item.id}">Add to cart</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderCart() {
+      if (!cart.length) {
+        cartItems.innerHTML = '<p class="empty-state">Your cart is empty. Add menu items to see the order summary here.</p>';
+      } else {
+        cartItems.innerHTML = cart.map(item => {
+          const addonText = item.addons.length ? item.addons.map(addon => addon.name).join(', ') : 'No add-ons';
+          const itemTotal = (item.unitPrice + item.addons.reduce((sum, addon) => sum + addon.price, 0)) * item.quantity;
+          return `
+            <article class="cart-item" data-cart-id="${item.id}">
+              <div class="cart-top">
+                <div>
+                  <h3>${item.name}</h3>
+                  <div class="cart-meta">${addonText}</div>
+                </div>
+                <strong>${money(itemTotal)}</strong>
+              </div>
+              <div class="cart-actions">
+                <div class="qty-picker">
+                  <button type="button" data-cart-action="decrease" data-cart-id="${item.id}">−</button>
+                  <strong>${item.quantity}</strong>
+                  <button type="button" data-cart-action="increase" data-cart-id="${item.id}">+</button>
+                </div>
+                <button class="secondary" type="button" data-cart-action="remove" data-cart-id="${item.id}">Remove</button>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      const subtotalValue = cart.reduce((sum, item) => {
+        const addonTotal = item.addons.reduce((addonSum, addon) => addonSum + addon.price, 0);
+        return sum + ((item.unitPrice + addonTotal) * item.quantity);
+      }, 0);
+      const deliveryValue = subtotalValue > 0 ? 39 : 0;
+      const taxValue = subtotalValue * 0.05;
+      const grandTotal = subtotalValue + deliveryValue + taxValue;
+
+      itemCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+      subtotal.textContent = money(subtotalValue);
+      delivery.textContent = money(deliveryValue);
+      taxes.textContent = money(taxValue);
+      total.textContent = money(grandTotal);
+      saveCart();
+    }
+
+    function ensureQuantityLabel(menuId, quantity) {
+      const label = document.getElementById(`qty-${menuId}`);
+      if (label) label.textContent = quantity;
+    }
+
+    function getSelectedAddons(menuId) {
+      return Array.from(document.querySelectorAll(`input[type="checkbox"][data-menu-id="${menuId}"]:checked`)).map(input => ({
+        id: input.value,
+        name: input.dataset.addonName,
+        price: Number(input.dataset.addonPrice)
+      }));
+    }
+
+    function setMenuQuantity(menuId, delta) {
+      const menuItem = getRestaurant().menu.find(item => item.id === menuId);
+      if (!menuItem) return;
+      const label = document.getElementById(`qty-${menuId}`);
+      const current = Number(label.textContent || '1');
+      const next = Math.max(1, current + delta);
+      label.textContent = next;
+    }
+
+    function addToCart(menuId) {
+      const menuItem = getRestaurant().menu.find(item => item.id === menuId);
+      if (!menuItem) return;
+      const quantity = Number(document.getElementById(`qty-${menuId}`).textContent || '1');
+      const addons = getSelectedAddons(menuId);
+      const signature = `${menuItem.id}-${addons.map(addon => addon.id).join('|')}`;
+      const existing = cart.find(item => item.signature === signature);
+
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        cart.push({
+          id: `${menuItem.id}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          signature,
+          name: menuItem.name,
+          unitPrice: menuItem.price,
+          addons,
+          quantity
+        });
+      }
+
+      Array.from(document.querySelectorAll(`input[type="checkbox"][data-menu-id="${menuId}"]`)).forEach(input => { input.checked = false; });
+      ensureQuantityLabel(menuId, 1);
+      renderCart();
+    }
+
+    function updateCartItem(cartId, delta) {
+      const item = cart.find(entry => entry.id === cartId);
+      if (!item) return;
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        cart = cart.filter(entry => entry.id !== cartId);
+      }
+      renderCart();
+    }
+
+    function removeCartItem(cartId) {
+      cart = cart.filter(entry => entry.id !== cartId);
+      renderCart();
+    }
+
+    function selectRestaurant(id) {
+      activeRestaurantId = id;
+      cart = loadCart(activeRestaurantId);
+      renderRestaurants();
+      renderMenu();
+      renderCart();
+    }
+
+    restaurantContainer.addEventListener('click', event => {
+      const card = event.target.closest('.restaurant');
+      if (!card) return;
+      selectRestaurant(card.dataset.id);
+    });
+
+    menuGrid.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const menuId = button.dataset.menuId;
+      const action = button.dataset.action;
+      if (action === 'add') addToCart(menuId);
+      if (action === 'increase') setMenuQuantity(menuId, 1);
+      if (action === 'decrease') setMenuQuantity(menuId, -1);
+    });
+
+    cartItems.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      const action = button.dataset.cartAction;
+      const id = button.dataset.cartId;
+      if (action === 'increase') updateCartItem(id, 1);
+      if (action === 'decrease') updateCartItem(id, -1);
+      if (action === 'remove') removeCartItem(id);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      cart = [];
+      renderCart();
+    });
+
+    checkoutBtn.addEventListener('click', () => {
+      if (!cart.length) return;
+      const restaurant = getRestaurant();
+      alert(`Order placed from ${restaurant.name}. Your cart will be cleared now.`);
+      cart = [];
+      renderCart();
+    });
+
+    renderRestaurants();
+    renderMenu();
+    renderCart();
+  </script>
+</body>
+</html>

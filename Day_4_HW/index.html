@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 4 Homework Hub</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #0f172a;
+      --bg2: #111827;
+      --card: rgba(15, 23, 42, 0.68);
+      --card2: rgba(255, 255, 255, 0.92);
+      --text: #e5eef8;
+      --muted: #a7b3c4;
+      --line: rgba(148, 163, 184, 0.2);
+      --accent: #5eead4;
+      --accent2: #fbbf24;
+      --accent3: #fb7185;
+      --shadow: 0 28px 60px rgba(15, 23, 42, 0.35);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(94, 234, 212, 0.14), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.14), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(251, 113, 133, 0.12), transparent 30%),
+        linear-gradient(160deg, var(--bg), var(--bg2));
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: rgba(15, 23, 42, 0.75);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(94, 234, 212, 0.12);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 4.4rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 10ch;
+    }
+
+    .lead {
+      margin: 14px 0 0;
+      max-width: 68ch;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 1.02rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    .card {
+      min-height: 100%;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #162030;
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.18);
+      text-decoration: none;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(2, 6, 23, 0.22);
+      border-color: rgba(94, 234, 212, 0.65);
+    }
+
+    .tag {
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .card h2 { margin: 0; font-size: 1.32rem; }
+    .card p { margin: 0; color: #4f5e6d; line-height: 1.55; }
+
+    .note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 18px, 1180px); padding-top: 18px; }
+      .hero { padding: 18px; border-radius: 22px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Day 4 Homework</div>
+      <h1>Q13 to Q16 interactive UI exercises</h1>
+      <p class="lead">Each folder below is a standalone HTML page with plain JavaScript, designed to run directly from the workspace and cover fetching, retries, autocomplete, and a full cart flow.</p>
+
+      <div class="grid">
+        <a class="card" href="./Q13/index.html">
+          <div class="tag">Q13</div>
+          <h2>Fetch and display user cards</h2>
+          <p>Load mock API data, show a loading state, and render a responsive grid of user profiles.</p>
+        </a>
+        <a class="card" href="./Q14/index.html">
+          <div class="tag">Q14</div>
+          <h2>API retry and error handling</h2>
+          <p>Automatically retry failed requests, then surface a clean error state if the API keeps failing.</p>
+        </a>
+        <a class="card" href="./Q15/index.html">
+          <div class="tag">Q15</div>
+          <h2>Autocomplete search dropdown</h2>
+          <p>Type queries, move through suggestions with the keyboard, and select with Enter or click.</p>
+        </a>
+        <a class="card" href="./Q16/index.html">
+          <div class="tag">Q16</div>
+          <h2>Restaurant ordering with cart</h2>
+          <p>Select a restaurant, add menu items with add-ons, adjust quantities, and persist the cart with localStorage.</p>
+        </a>
+      </div>
+
+      <p class="note">Open any page directly or use this hub to jump between the exercises.</p>
+    </section>
+  </main>
+</body>
+</html>
