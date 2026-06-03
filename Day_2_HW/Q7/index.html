@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q7 - Kanban Board</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f1ede6;
+      --card: #ffffff;
+      --text: #18222b;
+      --muted: #5c6973;
+      --line: rgba(24, 34, 43, 0.12);
+      --accent: #1f6f61;
+      --accent-soft: rgba(31, 111, 97, 0.1);
+      --shadow: 0 18px 42px rgba(24, 34, 43, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(31, 111, 97, 0.12), transparent 28%),
+        linear-gradient(135deg, #f7f2e9, #eef5f0);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(31,111,97,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .column {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      min-height: 420px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .column.dragover {
+      outline: 2px dashed rgba(31, 111, 97, 0.35);
+      outline-offset: -6px;
+      background: rgba(31, 111, 97, 0.04);
+    }
+
+    .column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .column-title { margin: 0; font-size: 1rem; }
+    .pill {
+      display: inline-flex;
+      min-width: 32px;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(31, 111, 97, 0.1);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .task {
+      border: 1px solid rgba(24, 34, 43, 0.08);
+      border-radius: 16px;
+      padding: 14px;
+      background: linear-gradient(180deg, #fff, #faf8f4);
+      cursor: grab;
+    }
+
+    .task:active { cursor: grabbing; }
+    .task h3 { margin: 0; font-size: 1rem; }
+    .task p { margin: 8px 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .hint {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 960px) {
+      .board { grid-template-columns: 1fr; }
+      .column { min-height: 240px; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1180px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Q7</div>
+      <h1>Kanban board with drag-and-drop cards</h1>
+      <p class="lead">Drag a card from one column to another to update the workflow. The board uses native HTML5 drag events so tasks can move between To Do, In Progress, and Done.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Workflow board</h2>
+        <p>Drop cards into any column to move them across the pipeline.</p>
+      </div>
+      <div class="panel-body">
+        <div class="board" id="board"></div>
+        <div class="hint">Tip: drop a card on a column, not on another card, to reposition it.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const boardData = {
+      todo: [
+        { id: 't1', title: 'Design landing copy', detail: 'Finalize the UI language and supporting text.', owner: 'Maya' },
+        { id: 't2', title: 'Review API contract', detail: 'Confirm the request and response fields.', owner: 'Aarav' },
+        { id: 't3', title: 'Prepare release checklist', detail: 'Document launch steps and verification items.', owner: 'Isha' },
+      ],
+      progress: [
+        { id: 't4', title: 'Build analytics widgets', detail: 'Connect the KPI cards to live metrics.', owner: 'Kabir' },
+        { id: 't5', title: 'Test mobile layout', detail: 'Check that the board stacks cleanly on small screens.', owner: 'Sara' },
+      ],
+      done: [
+        { id: 't6', title: 'Set up page shell', detail: 'Completed the shared hero and panel pattern.', owner: 'Neel' },
+      ],
+    };
+
+    const columns = [
+      { key: 'todo', title: 'To Do' },
+      { key: 'progress', title: 'In Progress' },
+      { key: 'done', title: 'Done' },
+    ];
+
+    const board = document.getElementById('board');
+    let draggedId = null;
+
+    function findColumnForTask(taskId) {
+      return Object.keys(boardData).find((key) => boardData[key].some((task) => task.id === taskId));
+    }
+
+    function moveTask(taskId, targetColumn) {
+      const sourceColumn = findColumnForTask(taskId);
+      if (!sourceColumn || sourceColumn === targetColumn) return;
+
+      const index = boardData[sourceColumn].findIndex((task) => task.id === taskId);
+      const [task] = boardData[sourceColumn].splice(index, 1);
+      boardData[targetColumn].push(task);
+      renderBoard();
+    }
+
+    function renderBoard() {
+      board.innerHTML = '';
+
+      columns.forEach((column) => {
+        const columnEl = document.createElement('section');
+        columnEl.className = 'column';
+        columnEl.dataset.column = column.key;
+        columnEl.innerHTML = `
+          <div class="column-head">
+            <h3 class="column-title">${column.title}</h3>
+            <span class="pill">${boardData[column.key].length}</span>
+          </div>
+        `;
+
+        boardData[column.key].forEach((task) => {
+          const taskEl = document.createElement('article');
+          taskEl.className = 'task';
+          taskEl.draggable = true;
+          taskEl.dataset.id = task.id;
+          taskEl.innerHTML = `
+            <h3>${task.title}</h3>
+            <p>${task.detail}</p>
+            <div class="task-meta">
+              <span>${task.owner}</span>
+              <span>${column.title}</span>
+            </div>
+          `;
+          taskEl.addEventListener('dragstart', () => {
+            draggedId = task.id;
+          });
+          taskEl.addEventListener('dragend', () => {
+            draggedId = null;
+          });
+          columnEl.append(taskEl);
+        });
+
+        columnEl.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          columnEl.classList.add('dragover');
+        });
+
+        columnEl.addEventListener('dragleave', () => {
+          columnEl.classList.remove('dragover');
+        });
+
+        columnEl.addEventListener('drop', (event) => {
+          event.preventDefault();
+          columnEl.classList.remove('dragover');
+          if (!draggedId) return;
+          moveTask(draggedId, column.key);
+          draggedId = null;
+        });
+
+        board.append(columnEl);
+      });
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>

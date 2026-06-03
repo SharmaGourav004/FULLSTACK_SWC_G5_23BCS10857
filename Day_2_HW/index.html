@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 2 Homework Hub</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef3f4;
+      --bg2: #f7efe7;
+      --card: rgba(255, 255, 255, 0.88);
+      --text: #162029;
+      --muted: #5c6973;
+      --line: rgba(22, 32, 41, 0.12);
+      --accent: #136f63;
+      --accent2: #c65f2c;
+      --shadow: 0 24px 60px rgba(19, 111, 99, 0.12);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(19, 111, 99, 0.16), transparent 32%),
+        radial-gradient(circle at right, rgba(198, 95, 44, 0.12), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    .hero,
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero { padding: 28px; }
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(19, 111, 99, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(2.1rem, 4vw, 4rem); line-height: 1; }
+    .lead { margin: 14px 0 0; max-width: 70ch; color: var(--muted); line-height: 1.65; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    a.card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 100%;
+      padding: 22px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    a.card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 38px rgba(22, 32, 41, 0.12);
+    }
+
+    .tag {
+      display: inline-flex;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(198, 95, 44, 0.1);
+      color: var(--accent2);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .card h2 { margin: 0; font-size: 1.35rem; }
+    .card p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 20px, 1180px); padding-top: 20px; }
+      .hero { padding: 20px; border-radius: 22px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Day 2 Homework</div>
+      <h1>Q5 to Q8 interactive UI exercises</h1>
+      <p class="lead">Each folder below is a standalone demo with no build step. Open the questions directly to see tab navigation, event delegation, drag and drop, and a responsive analytics dashboard.</p>
+
+      <div class="grid">
+        <a class="card" href="./Q5/index.html">
+          <div class="tag">Q5</div>
+          <h2>Tabbed dashboard navigation</h2>
+          <p>Switch between Overview, Details, and Settings while keeping a single active tab.</p>
+        </a>
+        <a class="card" href="./Q6/index.html">
+          <div class="tag">Q6</div>
+          <h2>High-performance list with deletion</h2>
+          <p>Render 1000+ items dynamically and remove the right row using event delegation.</p>
+        </a>
+        <a class="card" href="./Q7/index.html">
+          <div class="tag">Q7</div>
+          <h2>Drag-and-drop Kanban board</h2>
+          <p>Move tasks across To Do, In Progress, and Done columns.</p>
+        </a>
+        <a class="card" href="./Q8/index.html">
+          <div class="tag">Q8</div>
+          <h2>Responsive analytics dashboard</h2>
+          <p>See KPI cards, adaptive grids, and table layouts built for different screen sizes.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

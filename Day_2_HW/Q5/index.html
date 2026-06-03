@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q5 - Tab Navigation</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f1ede6;
+      --card: #ffffff;
+      --text: #17212a;
+      --muted: #5b6871;
+      --line: rgba(23, 33, 42, 0.12);
+      --accent: #1c7666;
+      --accent-soft: rgba(28, 118, 102, 0.1);
+      --shadow: 0 18px 42px rgba(23, 33, 42, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(28, 118, 102, 0.12), transparent 28%),
+        linear-gradient(135deg, #f7f1e8, #eef5f1);
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 24px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(28,118,102,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+    }
+
+    .tab {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 12px 16px;
+      background: #f7f4ef;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease, color 150ms ease, border-color 150ms ease;
+    }
+
+    .tab:hover { transform: translateY(-1px); }
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 10px 24px rgba(28, 118, 102, 0.22);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .content-card,
+    .stats-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      padding: 20px;
+    }
+
+    .content-card h3 { margin: 0; font-size: 1.45rem; }
+    .content-card p { margin: 12px 0 0; color: var(--muted); line-height: 1.7; }
+
+    .highlights {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .highlight {
+      border-radius: 16px;
+      padding: 14px;
+      background: linear-gradient(180deg, #fcfbf8, #f8f5f0);
+      border: 1px solid rgba(23, 33, 42, 0.08);
+    }
+
+    .highlight strong { display: block; margin-bottom: 4px; }
+    .highlight span { color: var(--muted); font-size: 0.95rem; }
+
+    .stats-card {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(28, 118, 102, 0.06);
+      border: 1px solid rgba(28, 118, 102, 0.12);
+    }
+
+    .stat .label { color: var(--muted); font-size: 0.9rem; }
+    .stat .value { font-size: 1.6rem; font-weight: 800; margin-top: 6px; }
+    .stat .note { margin-top: 4px; color: var(--accent); font-weight: 700; font-size: 0.88rem; }
+
+    .tabpanel { display: none; }
+    .tabpanel.active { display: grid; }
+
+    @media (max-width: 820px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1120px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .tabs { padding: 8px; }
+      .tab { flex: 1 1 calc(33.333% - 10px); min-width: 0; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Q5</div>
+      <h1>Tabbed navigation for dashboard-style content</h1>
+      <p class="lead">Click a tab to show its section. Only one tab stays active at a time, matching the way admin panels and settings pages switch between views.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Interactive tabs</h2>
+        <p>Overview, Details, and Settings are switched with a single active state.</p>
+      </div>
+      <div class="panel-body">
+        <div class="tabs" id="tabList" role="tablist" aria-label="Content sections"></div>
+        <div id="tabPanels"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const tabs = [
+      {
+        id: 'overview',
+        title: 'Overview',
+        headline: 'A compact summary of the workspace',
+        body: 'The overview panel gives a fast snapshot of usage, activity, and current priorities. It is designed to surface the most important information first, just like a dashboard landing page.',
+        highlights: [
+          { label: 'Open tasks', value: '42', note: '8 due today' },
+          { label: 'System health', value: '99.9%', note: 'Stable for 14 days' },
+        ],
+      },
+      {
+        id: 'details',
+        title: 'Details',
+        headline: 'Deeper information for advanced users',
+        body: 'The details view is intended for long-form content, structured notes, and technical breakdowns. It mirrors documentation-style layouts where the active panel changes without reloading the page.',
+        highlights: [
+          { label: 'Articles indexed', value: '128', note: 'Updated hourly' },
+          { label: 'Search hits', value: '1.4K', note: 'Across all sections' },
+        ],
+      },
+      {
+        id: 'settings',
+        title: 'Settings',
+        headline: 'Controls for preferences and behavior',
+        body: 'The settings panel groups toggles, access controls, and layout options into one destination. Only one tab is active at a time so the interface stays clear and predictable.',
+        highlights: [
+          { label: 'Theme mode', value: 'Light', note: 'Default active mode' },
+          { label: 'Notifications', value: 'On', note: 'Daily summary enabled' },
+        ],
+      },
+    ];
+
+    const tabList = document.getElementById('tabList');
+    const tabPanels = document.getElementById('tabPanels');
+    let activeTabId = tabs[0].id;
+
+    function renderTabs() {
+      tabList.innerHTML = tabs.map((tab) => `
+        <button
+          class="tab${tab.id === activeTabId ? ' active' : ''}"
+          type="button"
+          role="tab"
+          aria-selected="${tab.id === activeTabId}"
+          aria-controls="panel-${tab.id}"
+          data-tab="${tab.id}"
+          id="tab-${tab.id}"
+        >
+          ${tab.title}
+        </button>
+      `).join('');
+    }
+
+    function renderPanels() {
+      tabPanels.innerHTML = tabs.map((tab) => `
+        <section
+          class="tabpanel${tab.id === activeTabId ? ' active' : ''}"
+          id="panel-${tab.id}"
+          role="tabpanel"
+          aria-labelledby="tab-${tab.id}"
+        >
+          <div class="content-grid">
+            <article class="content-card">
+              <h3>${tab.headline}</h3>
+              <p>${tab.body}</p>
+              <div class="highlights">
+                ${tab.highlights.map((item) => `
+                  <div class="highlight">
+                    <strong>${item.label}</strong>
+                    <span>${item.value} - ${item.note}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </article>
+            <aside class="stats-card">
+              <div class="stat">
+                <div class="label">Active section</div>
+                <div class="value">${tab.title}</div>
+                <div class="note">Only one tab is visible</div>
+              </div>
+              <div class="stat">
+                <div class="label">Content type</div>
+                <div class="value">${tab.id === 'overview' ? 'Summary' : tab.id === 'details' ? 'Reference' : 'Preferences'}</div>
+                <div class="note">Updated instantly on click</div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      `).join('');
+    }
+
+    function activateTab(tabId) {
+      activeTabId = tabId;
+      renderTabs();
+      renderPanels();
+    }
+
+    tabList.addEventListener('click', (event) => {
+      const button = event.target.closest('.tab');
+      if (!button) return;
+      activateTab(button.dataset.tab);
+    });
+
+    renderTabs();
+    renderPanels();
+  </script>
+</body>
+</html>

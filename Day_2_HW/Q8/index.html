@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q8 - Analytics Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eff3f4;
+      --bg2: #f7efe7;
+      --card: rgba(255, 255, 255, 0.9);
+      --text: #162029;
+      --muted: #5b6871;
+      --line: rgba(22, 32, 41, 0.12);
+      --accent: #166f62;
+      --accent2: #c65f2c;
+      --shadow: 0 24px 60px rgba(22, 32, 41, 0.08);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(22, 111, 98, 0.15), transparent 30%),
+        radial-gradient(circle at right, rgba(198, 95, 44, 0.11), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .hero { padding: 28px; }
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(22, 111, 98, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+    h1 { margin: 12px 0 0; font-size: clamp(2rem, 3vw, 3.1rem); }
+    .lead { margin: 10px 0 0; color: var(--muted); line-height: 1.65; max-width: 72ch; }
+
+    .panel { margin-top: 18px; }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(22,111,98,0.07), rgba(255,255,255,0.35));
+    }
+    .panel-head h2 { margin: 0; font-size: 1.15rem; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .panel-body { padding: 20px; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi,
+    .table-card,
+    .chart-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+    }
+
+    .kpi {
+      padding: 16px;
+      min-height: 132px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .kpi .label { color: var(--muted); font-size: 0.9rem; }
+    .kpi .value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .kpi .delta { font-weight: 700; font-size: 0.88rem; }
+    .up { color: #2f7a4b; }
+    .down { color: #b03d2f; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.5fr 0.95fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .chart-card {
+      padding: 18px;
+      min-height: 320px;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: #faf7f2;
+    }
+
+    .table-head h3 { margin: 0; font-size: 1.05rem; }
+    .table-head span { color: var(--muted); font-size: 0.9rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      background: #fcfaf7;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 56px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(22, 32, 41, 0.08);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #39a18f);
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+    }
+
+    .mini-card h3 { margin: 0; font-size: 1.05rem; }
+    .mini-card p { margin: 8px 0 0; color: var(--muted); line-height: 1.6; }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(22, 111, 98, 0.05);
+    }
+
+    .list-item strong { display: block; }
+    .list-item span { color: var(--muted); font-size: 0.9rem; }
+
+    @media (max-width: 1100px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .page { width: min(100% - 16px, 1220px); padding-top: 16px; }
+      .hero, .panel { border-radius: 18px; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 90px 1fr 48px; }
+      table { min-width: 620px; }
+      .table-card { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Q8</div>
+      <h1>Responsive analytics dashboard with KPI cards and tables</h1>
+      <p class="lead">The layout adapts from a multi-column desktop dashboard to a stacked mobile view while keeping the KPI cards, tables, and supporting panels readable.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Performance overview</h2>
+        <p>Adaptive grids keep the dashboard usable across screen sizes.</p>
+      </div>
+      <div class="panel-body">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="label">Revenue</div>
+            <div class="value">$124K</div>
+            <div class="delta up">+12.4% from last month</div>
+            <div class="small-note">Most growth came from repeat customers.</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Orders</div>
+            <div class="value">8,420</div>
+            <div class="delta up">+6.1% from last month</div>
+            <div class="small-note">New launches lifted conversion volume.</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Conversion</div>
+            <div class="value">4.8%</div>
+            <div class="delta up">+0.7% from last month</div>
+            <div class="small-note">Checkout improvements reduced friction.</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Refund rate</div>
+            <div class="value">1.2%</div>
+            <div class="delta down">-0.3% from last month</div>
+            <div class="small-note">Lower returns on top-selling items.</div>
+          </div>
+        </div>
+
+        <div class="layout">
+          <section class="chart-card">
+            <h3 style="margin:0;">Channel mix</h3>
+            <p style="margin:8px 0 0; color:var(--muted);">A simple adaptive bar layout shows relative channel performance without depending on a heavy charting library.</p>
+            <div class="bar-list">
+              <div class="bar-row"><strong>Organic</strong><div class="bar-track"><div class="bar-fill" style="width: 82%;"></div></div><span>82%</span></div>
+              <div class="bar-row"><strong>Paid</strong><div class="bar-track"><div class="bar-fill" style="width: 58%;"></div></div><span>58%</span></div>
+              <div class="bar-row"><strong>Social</strong><div class="bar-track"><div class="bar-fill" style="width: 41%;"></div></div><span>41%</span></div>
+              <div class="bar-row"><strong>Email</strong><div class="bar-track"><div class="bar-fill" style="width: 66%;"></div></div><span>66%</span></div>
+            </div>
+          </section>
+
+          <aside class="sidebar">
+            <div class="mini-card">
+              <h3>Weekly goals</h3>
+              <p>Progress remains on track for the reporting window. The card stack collapses naturally on smaller screens.</p>
+              <div class="list">
+                <div class="list-item"><div><strong>Pipeline health</strong><span>92% complete</span></div><div class="up">+4%</div></div>
+                <div class="list-item"><div><strong>Support SLA</strong><span>Average response</span></div><div class="up">18m</div></div>
+                <div class="list-item"><div><strong>Active users</strong><span>Current week</span></div><div class="up">18.2K</div></div>
+              </div>
+            </div>
+
+            <div class="mini-card">
+              <h3>Quarter snapshot</h3>
+              <p>Short supporting summary for stakeholders who want a quick read before opening the detailed report.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="table-card" style="margin-top: 14px;">
+          <div class="table-head">
+            <div>
+              <h3>Recent performance table</h3>
+              <span>Adaptive, readable, and structured for dense data</span>
+            </div>
+            <span>Last 7 days</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Sessions</th>
+                <th>Conversion</th>
+                <th>Revenue</th>
+                <th>Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Organic</td><td>24,120</td><td>5.2%</td><td>$58,400</td><td>Up</td></tr>
+              <tr><td>Paid</td><td>14,800</td><td>4.1%</td><td>$33,900</td><td>Stable</td></tr>
+              <tr><td>Social</td><td>9,460</td><td>3.4%</td><td>$14,200</td><td>Up</td></tr>
+              <tr><td>Email</td><td>6,240</td><td>6.8%</td><td>$17,600</td><td>Up</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
