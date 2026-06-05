@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q20 - Instagram Feed</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5efe7;
+      --bg2: #e4f1f0;
+      --panel: rgba(255, 255, 255, 0.94);
+      --text: #162233;
+      --muted: #62707d;
+      --line: rgba(22, 34, 51, 0.12);
+      --accent: #0f766e;
+      --accent2: #c2410c;
+      --accent3: #7c3aed;
+      --shadow: 0 20px 50px rgba(15, 118, 110, 0.12);
+      --story-ring: conic-gradient(from 210deg, #f97316, #ec4899, #8b5cf6, #06b6d4, #f97316);
+      --post-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --bg2: #111827;
+      --panel: rgba(15, 23, 42, 0.82);
+      --text: #edf3ff;
+      --muted: #a6b4c7;
+      --line: rgba(148, 163, 184, 0.18);
+      --accent: #67e8f9;
+      --accent2: #fbbf24;
+      --accent3: #f472b6;
+      --shadow: 0 24px 60px rgba(2, 6, 23, 0.42);
+      --story-ring: conic-gradient(from 210deg, #fb7185, #fbbf24, #8b5cf6, #22d3ee, #fb7185);
+      --post-shadow: 0 18px 40px rgba(2, 6, 23, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(251, 191, 36, 0.14), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(251, 113, 133, 0.12), transparent 30%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    .page {
+      width: min(1160px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .shell {
+      padding: 20px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .lead {
+      margin: 12px 0 0;
+      max-width: 72ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .theme-btn:hover { transform: translateY(-2px); }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      margin: 22px 0 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .stories {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(88px, 1fr);
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+    }
+
+    .story {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      min-width: 88px;
+    }
+
+    .story-ring {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      padding: 4px;
+      background: var(--story-ring);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+    }
+
+    .story-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      background: linear-gradient(135deg, var(--tone1), var(--tone2));
+      border: 3px solid var(--panel);
+    }
+
+    .story-label {
+      max-width: 92px;
+      text-align: center;
+      font-size: 0.86rem;
+      line-height: 1.2;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feed {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .post {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--post-shadow);
+      overflow: hidden;
+    }
+
+    :root[data-theme="dark"] .post {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .post-head, .post-foot {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .profile-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--tone1), var(--tone2));
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      flex: none;
+    }
+
+    .profile strong,
+    .profile span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .post-media {
+      min-height: 380px;
+      background: linear-gradient(135deg, var(--tone1), var(--tone2));
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      align-items: end;
+      padding: 18px;
+    }
+
+    .post-media::before,
+    .post-media::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .post-media::before {
+      width: 180px;
+      height: 180px;
+      top: -28px;
+      right: -18px;
+    }
+
+    .post-media::after {
+      width: 220px;
+      height: 220px;
+      bottom: -56px;
+      left: -20px;
+    }
+
+    .media-overlay {
+      position: relative;
+      z-index: 1;
+      color: white;
+      max-width: 75%;
+      display: grid;
+      gap: 8px;
+    }
+
+    .media-kicker {
+      display: inline-flex;
+      width: fit-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(8px);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .media-title {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.05;
+      text-shadow: 0 10px 20px rgba(2, 6, 23, 0.18);
+    }
+
+    .caption {
+      margin: 0;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      opacity: 0.8;
+    }
+
+    .load-more {
+      margin: 18px auto 0;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), #14b8a6);
+      color: white;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 800;
+      box-shadow: 0 12px 26px rgba(15, 118, 110, 0.18);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    .status-row {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 14px, 1160px); padding-top: 14px; }
+      .shell { padding: 16px; border-radius: 22px; }
+      .post-media { min-height: 300px; }
+      .media-overlay { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    const { createElement: h, createContext, useContext, useEffect, useMemo, useRef, useState } = React;
+    const { createRoot } = ReactDOM;
+
+    const ThemeContext = createContext(null);
+
+    const storyData = [
+      ['Aarav', '#0f766e', '#14b8a6'],
+      ['Mira', '#c2410c', '#fb923c'],
+      ['Kabir', '#7c3aed', '#a855f7'],
+      ['Nina', '#1d4ed8', '#38bdf8'],
+      ['Rohan', '#be123c', '#f472b6'],
+      ['Sara', '#166534', '#22c55e'],
+      ['Ishaan', '#0f172a', '#334155'],
+      ['Diya', '#b45309', '#f59e0b']
+    ];
+
+    const names = [
+      'Aarav', 'Mira', 'Kabir', 'Nina', 'Rohan', 'Sara', 'Ishaan', 'Diya',
+      'Aditya', 'Tara', 'Arjun', 'Meera', 'Vikram', 'Anaya', 'Dev', 'Sana'
+    ];
+
+    const captions = [
+      'Golden hour frame, clean composition, and a bright color story.',
+      'A quiet desk setup for planning, edits, and small daily wins.',
+      'Weekend snapshot with strong contrast and a soft shadow palette.',
+      'Fresh launch mood: crisp layout, bold motion, and a tidy finish.',
+      'Evening post with a deep sky gradient and a high-energy note.',
+      'Minimal scene with layered depth and a calm visual rhythm.'
+    ];
+
+    const palette = [
+      ['#0f766e', '#14b8a6'],
+      ['#c2410c', '#fb923c'],
+      ['#7c3aed', '#a855f7'],
+      ['#0f172a', '#334155'],
+      ['#be123c', '#f472b6'],
+      ['#1d4ed8', '#38bdf8'],
+      ['#166534', '#22c55e'],
+      ['#b45309', '#f59e0b']
+    ];
+
+    function makePosts(startIndex, count) {
+      return Array.from({ length: count }, (_, localIndex) => {
+        const index = startIndex + localIndex;
+        const [tone1, tone2] = palette[index % palette.length];
+        const name = names[index % names.length];
+        return {
+          id: index + 1,
+          name,
+          handle: `@${name.toLowerCase()}_${String(index + 1).padStart(2, '0')}`,
+          time: `${(index % 9) + 1}h`,
+          likes: 1200 + index * 87,
+          comments: 45 + index * 3,
+          tone1,
+          tone2,
+          caption: captions[index % captions.length],
+          tag: ['Travel', 'Style', 'Workspace', 'Food', 'Design', 'Lifestyle'][index % 6]
+        };
+      });
+    }
+
+    function ThemeProvider({ children }) {
+      const [theme, setTheme] = useState('light');
+
+      useEffect(() => {
+        document.documentElement.dataset.theme = theme;
+      }, [theme]);
+
+      const value = useMemo(() => ({
+        theme,
+        toggleTheme: () => setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+      }), [theme]);
+
+      return h(ThemeContext.Provider, { value }, children);
+    }
+
+    function useTheme() {
+      return useContext(ThemeContext);
+    }
+
+    function StoryRing({ name, tone1, tone2 }) {
+      return h('a', { className: 'story', href: '#feed', title: name },
+        h('div', { className: 'story-ring', style: { background: 'var(--story-ring)' } },
+          h('div', { className: 'story-avatar', style: { '--tone1': tone1, '--tone2': tone2 } }, name.slice(0, 1))
+        ),
+        h('div', { className: 'story-label' }, name)
+      );
+    }
+
+    function PostCard({ post }) {
+      return h('article', { className: 'post' },
+        h('div', { className: 'post-head' },
+          h('div', { className: 'profile' },
+            h('div', { className: 'profile-badge', style: { '--tone1': post.tone1, '--tone2': post.tone2 } }, post.name.slice(0, 1)),
+            h('div', null,
+              h('strong', null, post.name),
+              h('span', null, post.handle)
+            )
+          ),
+          h('div', { className: 'actions' },
+            h('span', null, post.time),
+            h('span', { className: 'dot' }),
+            h('span', null, post.tag)
+          )
+        ),
+        h('div', { className: 'post-media', style: { '--tone1': post.tone1, '--tone2': post.tone2 } },
+          h('div', { className: 'media-overlay' },
+            h('div', { className: 'media-kicker' }, post.tag),
+            h('h3', { className: 'media-title' }, `Post ${post.id}`),
+            h('div', null, 'Story-led visual content designed for an Instagram-style feed.'),
+            h('div', { style: { marginTop: '10px', fontWeight: 700 } }, `${post.likes.toLocaleString()} likes · ${post.comments.toLocaleString()} comments`)
+          )
+        ),
+        h('div', { className: 'post-foot' },
+          h('p', { className: 'caption' }, post.caption),
+          h('div', { className: 'actions' },
+            h('span', null, 'Save'),
+            h('span', null, 'Share')
+          )
+        )
+      );
+    }
+
+    function App() {
+      const { theme, toggleTheme } = useTheme();
+      const [posts, setPosts] = useState(() => makePosts(0, 6));
+      const [loading, setLoading] = useState(false);
+      const [hasMore, setHasMore] = useState(true);
+      const sentinelRef = useRef(null);
+      const nextIndexRef = useRef(6);
+      const loadingTimerRef = useRef(null);
+
+      useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries[0].isIntersecting || loading || !hasMore) return;
+          setLoading(true);
+          window.clearTimeout(loadingTimerRef.current);
+          loadingTimerRef.current = window.setTimeout(() => {
+            setPosts((current) => {
+              const morePosts = makePosts(nextIndexRef.current, 4);
+              nextIndexRef.current += 4;
+              const updated = current.concat(morePosts);
+              if (updated.length >= 22) {
+                setHasMore(false);
+              }
+              return updated;
+            });
+            setLoading(false);
+          }, 900);
+        }, { rootMargin: '180px 0px' });
+
+        const element = sentinelRef.current;
+        if (element) observer.observe(element);
+        return () => {
+          observer.disconnect();
+          window.clearTimeout(loadingTimerRef.current);
+        };
+      }, [loading, hasMore]);
+
+      return h('main', { className: 'page' },
+        h('section', { className: 'shell' },
+          h('div', { className: 'topbar' },
+            h('div', null,
+              h('div', { className: 'eyebrow' }, 'Q20 - Instagram feed'),
+              h('h1', null, 'Stories, infinite scroll, and context-driven dark mode'),
+              h('p', { className: 'lead' }, 'This feed starts with a story strip, loads more posts as you scroll, and uses a React Context provider to switch between light and dark themes.')
+            ),
+            h('button', { className: 'theme-btn', onClick: toggleTheme }, theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode')
+          ),
+
+          h('div', { className: 'section-title' },
+            h('h2', null, 'Stories'),
+            h('span', null, 'Highlight circles at the top of the feed')
+          ),
+          h('div', { className: 'stories' },
+            storyData.map(([name, tone1, tone2]) => h(StoryRing, { key: name, name, tone1, tone2 }))
+          ),
+
+          h('div', { className: 'section-title', id: 'feed' },
+            h('h2', null, 'Feed'),
+            h('span', null, loading ? 'Loading more posts...' : hasMore ? `${posts.length} posts loaded` : 'End of feed reached')
+          ),
+          h('div', { className: 'feed' },
+            posts.map((post) => h(PostCard, { key: post.id, post }))
+          ),
+          loading ? h('button', { className: 'load-more', type: 'button', disabled: true }, h('span', { className: 'spinner' }), 'Loading more posts') : null,
+          hasMore ? h('div', { ref: sentinelRef, style: { height: '1px' } }) : h('div', { className: 'status-row' }, h('div', { className: 'chip' }, 'You have reached the end of the sample feed.')),
+          h('div', { className: 'status-row' },
+            h('div', { className: 'chip' }, `Theme: ${theme}`),
+            h('div', { className: 'chip' }, 'Infinite scroll enabled'),
+            h('div', { className: 'chip' }, 'Dark mode powered by Context API')
+          )
+        )
+      );
+    }
+
+    createRoot(document.getElementById('root')).render(
+      h(ThemeProvider, null, h(App))
+    );
+  </script>
+</body>
+</html>

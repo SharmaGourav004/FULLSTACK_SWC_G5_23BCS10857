@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q17 - Paginated Product Listing</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6efe7;
+      --bg2: #e4f0f2;
+      --panel: rgba(255, 255, 255, 0.9);
+      --text: #162233;
+      --muted: #5e6d78;
+      --line: rgba(22, 34, 51, 0.12);
+      --accent: #0f766e;
+      --accent2: #c2410c;
+      --accent3: #7c3aed;
+      --shadow: 0 18px 48px rgba(15, 118, 110, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
+        radial-gradient(circle at 90% 20%, rgba(194, 65, 12, 0.12), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 46px;
+    }
+
+    .hero {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .lead {
+      margin: 12px 0 0;
+      max-width: 70ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .chip strong { color: var(--text); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .card {
+      min-height: 100%;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 10px 24px rgba(22, 34, 51, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .thumb {
+      height: 150px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--tone1), var(--tone2));
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 14px;
+      color: white;
+      box-shadow: inset 0 -40px 55px rgba(2, 6, 23, 0.2);
+    }
+
+    .thumb::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -24% auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .badge {
+      position: relative;
+      z-index: 1;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .title { margin: 0; font-size: 1.03rem; line-height: 1.35; }
+    .meta { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #b45309;
+      font-weight: 800;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .page-btn {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      padding: 11px 14px;
+      min-width: 44px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, color 160ms ease;
+      box-shadow: 0 8px 18px rgba(22, 34, 51, 0.06);
+    }
+
+    .page-btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .page-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .page-btn.active {
+      background: linear-gradient(135deg, var(--accent), #14b8a6);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 12px 26px rgba(15, 118, 110, 0.2);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.94rem;
+    }
+
+    @media (max-width: 1120px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 760px) {
+      .page { width: min(100% - 16px, 1200px); padding-top: 16px; }
+      .hero { padding: 18px; border-radius: 22px; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+      .toolbar { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Q17 - Paginated product results</div>
+      <h1>Browse listings with numbered pagination</h1>
+      <p class="lead">This interface shows ten items per page, includes previous and next controls, and highlights the active page like a shopping or result listing page.</p>
+
+      <div class="toolbar">
+        <div class="chip" id="summaryChip"><strong>Page 1</strong> of 1</div>
+        <div class="chip" id="countChip">0 items</div>
+        <div class="chip">Items per page: <strong>10</strong></div>
+      </div>
+
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="pagination" class="pagination" aria-label="Pagination controls"></div>
+      <p class="footer-note">Use the numbered buttons or the previous and next controls to move through the catalog.</p>
+    </section>
+  </main>
+
+  <script>
+    const itemsPerPage = 10;
+    const items = [
+      { name: 'AeroSound Wireless Headphones', price: 3499, rating: 4.6, category: 'Electronics', tone1: '#0f766e', tone2: '#14b8a6' },
+      { name: 'Nimbus Running Shoes', price: 2799, rating: 4.4, category: 'Sportswear', tone1: '#7c3aed', tone2: '#a855f7' },
+      { name: 'Studio Desk Lamp', price: 1899, rating: 4.2, category: 'Home Office', tone1: '#c2410c', tone2: '#fb923c' },
+      { name: 'Breeze Smart Water Bottle', price: 1499, rating: 4.5, category: 'Lifestyle', tone1: '#0ea5e9', tone2: '#38bdf8' },
+      { name: 'Pixel Fit Smartwatch', price: 5499, rating: 4.7, category: 'Wearables', tone1: '#0f172a', tone2: '#334155' },
+      { name: 'Comfort Cloud Hoodie', price: 2299, rating: 4.3, category: 'Apparel', tone1: '#7f1d1d', tone2: '#ef4444' },
+      { name: 'PureBrew Coffee Maker', price: 4299, rating: 4.6, category: 'Kitchen', tone1: '#92400e', tone2: '#f59e0b' },
+      { name: 'Canvas Storage Basket', price: 999, rating: 4.1, category: 'Home', tone1: '#166534', tone2: '#22c55e' },
+      { name: 'TrailLite Backpack', price: 2599, rating: 4.8, category: 'Travel', tone1: '#1d4ed8', tone2: '#38bdf8' },
+      { name: 'GlowRing Desk Mirror', price: 1399, rating: 4.0, category: 'Beauty', tone1: '#be123c', tone2: '#f472b6' },
+      { name: 'Mosaic Ceramic Planter', price: 799, rating: 4.2, category: 'Decor', tone1: '#4338ca', tone2: '#818cf8' },
+      { name: 'Orbit Bluetooth Speaker', price: 3199, rating: 4.5, category: 'Audio', tone1: '#0f766e', tone2: '#22d3ee' },
+      { name: 'Peak Performance Water Bottle', price: 1299, rating: 4.3, category: 'Fitness', tone1: '#14532d', tone2: '#34d399' },
+      { name: 'Velvet Throw Pillow Set', price: 1699, rating: 4.1, category: 'Living Room', tone1: '#831843', tone2: '#ec4899' },
+      { name: 'Everyday Notebook Pack', price: 699, rating: 4.6, category: 'Stationery', tone1: '#475569', tone2: '#94a3b8' },
+      { name: 'Fusion USB-C Hub', price: 2399, rating: 4.4, category: 'Accessories', tone1: '#1e293b', tone2: '#64748b' },
+      { name: 'Luma Floor Mat', price: 1599, rating: 4.2, category: 'Home Essentials', tone1: '#713f12', tone2: '#facc15' },
+      { name: 'Citrus Scent Candle', price: 549, rating: 4.7, category: 'Wellness', tone1: '#dc2626', tone2: '#fb7185' },
+      { name: 'Bento Lunch Box', price: 899, rating: 4.0, category: 'Kitchen', tone1: '#0891b2', tone2: '#22d3ee' },
+      { name: 'Vision Privacy Screen', price: 3799, rating: 4.5, category: 'Office', tone1: '#312e81', tone2: '#818cf8' },
+      { name: 'CloudSleep Eye Mask', price: 499, rating: 4.3, category: 'Travel', tone1: '#164e63', tone2: '#67e8f9' },
+      { name: 'Nova Rechargeable Fan', price: 2199, rating: 4.4, category: 'Home Appliance', tone1: '#1e3a8a', tone2: '#60a5fa' },
+      { name: 'Artisan Coaster Set', price: 649, rating: 4.2, category: 'Decor', tone1: '#7c2d12', tone2: '#fdba74' },
+      { name: 'FlexGrip Mouse Pad', price: 349, rating: 4.1, category: 'Accessories', tone1: '#4c1d95', tone2: '#c084fc' },
+      { name: 'ZenDesk Cable Organizer', price: 599, rating: 4.5, category: 'Work Desk', tone1: '#0f172a', tone2: '#475569' },
+      { name: 'Horizon Reading Glasses', price: 1199, rating: 4.0, category: 'Lifestyle', tone1: '#b45309', tone2: '#f59e0b' },
+      { name: 'Pulse Fitness Band', price: 1999, rating: 4.6, category: 'Wearables', tone1: '#065f46', tone2: '#34d399' },
+      { name: 'SoftTouch Bath Towel', price: 899, rating: 4.3, category: 'Home', tone1: '#0f766e', tone2: '#5eead4' },
+      { name: 'Minimal Wall Clock', price: 1599, rating: 4.2, category: 'Home Decor', tone1: '#7c2d12', tone2: '#fb923c' },
+      { name: 'BrightBeam Flashlight', price: 1099, rating: 4.5, category: 'Outdoors', tone1: '#1d4ed8', tone2: '#93c5fd' },
+      { name: 'Cozy Knit Beanie', price: 499, rating: 4.1, category: 'Apparel', tone1: '#9f1239', tone2: '#f43f5e' },
+      { name: 'Echo Mini Tripod', price: 1399, rating: 4.4, category: 'Content Creator', tone1: '#111827', tone2: '#374151' },
+      { name: 'PureSkin Face Roller', price: 799, rating: 4.0, category: 'Beauty', tone1: '#be185d', tone2: '#fda4af' },
+      { name: 'Daily Grip Bottle Bag', price: 699, rating: 4.2, category: 'Fitness', tone1: '#166534', tone2: '#86efac' },
+      { name: 'AirFlow Travel Pillow', price: 1499, rating: 4.7, category: 'Travel', tone1: '#0369a1', tone2: '#38bdf8' },
+      { name: 'CraftLine Pen Set', price: 399, rating: 4.3, category: 'Stationery', tone1: '#334155', tone2: '#cbd5e1' },
+      { name: 'SmartTag Key Finder', price: 2499, rating: 4.5, category: 'Tech', tone1: '#155e75', tone2: '#22d3ee' },
+      { name: 'HomeFresh Air Diffuser', price: 2199, rating: 4.4, category: 'Wellness', tone1: '#7c3aed', tone2: '#d8b4fe' },
+      { name: 'EdgeGuard Laptop Sleeve', price: 1299, rating: 4.6, category: 'Accessories', tone1: '#1f2937', tone2: '#94a3b8' },
+      { name: 'Sunset Picnic Plate Set', price: 1799, rating: 4.2, category: 'Outdoor', tone1: '#ea580c', tone2: '#fdba74' },
+      { name: 'Aura Ring Light', price: 2899, rating: 4.8, category: 'Content Creator', tone1: '#0f172a', tone2: '#64748b' },
+      { name: 'Moss Plant Mister', price: 549, rating: 4.1, category: 'Gardening', tone1: '#166534', tone2: '#4ade80' },
+      { name: 'Velox Charging Cable', price: 299, rating: 4.0, category: 'Tech', tone1: '#374151', tone2: '#9ca3af' },
+      { name: 'FreshGrip Lunch Thermos', price: 1199, rating: 4.5, category: 'Kitchen', tone1: '#be123c', tone2: '#fb7185' },
+      { name: 'QuietKey Mechanical Keyboard', price: 5499, rating: 4.7, category: 'Gaming', tone1: '#4338ca', tone2: '#818cf8' },
+      { name: 'Pocket Multi-Tool', price: 1599, rating: 4.4, category: 'Outdoors', tone1: '#92400e', tone2: '#d97706' },
+      { name: 'Linen Desk Mat', price: 999, rating: 4.3, category: 'Work Desk', tone1: '#155e75', tone2: '#67e8f9' },
+      { name: 'WaveNoise Sleep Machine', price: 3299, rating: 4.6, category: 'Wellness', tone1: '#1d4ed8', tone2: '#60a5fa' }
+    ];
+
+    const grid = document.getElementById('grid');
+    const pagination = document.getElementById('pagination');
+    const summaryChip = document.getElementById('summaryChip');
+    const countChip = document.getElementById('countChip');
+
+    let currentPage = 1;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+
+    function formatPrice(value) {
+      return `₹${value.toLocaleString('en-IN')}`;
+    }
+
+    function renderGrid() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const pageItems = items.slice(start, start + itemsPerPage);
+
+      grid.innerHTML = pageItems.map((item, index) => `
+        <article class="card" style="--tone1: ${item.tone1}; --tone2: ${item.tone2};">
+          <div class="thumb">
+            <div class="badge">${item.category}</div>
+          </div>
+          <h2 class="title">${start + index + 1}. ${item.name}</h2>
+          <p class="meta">Premium result-page card with a product-style thumbnail, concise metadata, and a clean listing layout.</p>
+          <div class="rating">★ ${item.rating.toFixed(1)} <span style="color: var(--muted); font-weight: 600;">${formatPrice(item.price)}</span></div>
+        </article>
+      `).join('');
+
+      const firstItem = start + 1;
+      const lastItem = start + pageItems.length;
+      summaryChip.innerHTML = `<strong>Page ${currentPage}</strong> of ${totalPages} · Items ${firstItem}-${lastItem}`;
+      countChip.textContent = `${items.length} items total`;
+    }
+
+    function renderPagination() {
+      const buttons = [];
+      buttons.push(`<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="prev">Previous</button>`);
+
+      for (let page = 1; page <= totalPages; page += 1) {
+        buttons.push(`<button class="page-btn ${page === currentPage ? 'active' : ''}" data-page="${page}" aria-current="${page === currentPage ? 'page' : 'false'}">${page}</button>`);
+      }
+
+      buttons.push(`<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="next">Next</button>`);
+      pagination.innerHTML = buttons.join('');
+    }
+
+    function goToPage(page) {
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderGrid();
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    pagination.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-page]');
+      if (!button || button.disabled) return;
+
+      const page = button.dataset.page;
+      if (page === 'prev') goToPage(currentPage - 1);
+      else if (page === 'next') goToPage(currentPage + 1);
+      else goToPage(Number(page));
+    });
+
+    renderGrid();
+    renderPagination();
+  </script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q18 - Stopwatch</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5efe7;
+      --bg2: #e2eef2;
+      --panel: rgba(255, 255, 255, 0.92);
+      --text: #142235;
+      --muted: #5e6d79;
+      --line: rgba(20, 34, 53, 0.12);
+      --accent: #0f766e;
+      --accent2: #c2410c;
+      --accent3: #7c3aed;
+      --shadow: 0 18px 48px rgba(15, 118, 110, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 28%),
+        radial-gradient(circle at 85% 18%, rgba(251, 191, 36, 0.14), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(980px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    .panel {
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .lead {
+      margin: 12px 0 0;
+      max-width: 68ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .timer-card, .info-card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(20, 34, 53, 0.06);
+    }
+
+    .timer-card { padding: 24px; }
+    .info-card { padding: 20px; }
+
+    .timer-shell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 310px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at center, rgba(15, 118, 110, 0.16), transparent 45%),
+        linear-gradient(135deg, rgba(15, 118, 110, 0.06), rgba(255, 255, 255, 0.92));
+      border: 1px solid rgba(15, 118, 110, 0.12);
+      overflow: hidden;
+    }
+
+    .ring {
+      width: min(74vw, 260px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 18px solid rgba(15, 118, 110, 0.12);
+      border-top-color: var(--accent);
+      border-right-color: #14b8a6;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 12px rgba(255, 255, 255, 0.45);
+    }
+
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(2.6rem, 8vw, 4.8rem);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: #0f172a;
+      text-align: center;
+    }
+
+    .status {
+      margin-top: 8px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(15, 118, 110, 0.18);
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+
+    .btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .start { background: linear-gradient(135deg, var(--accent), #14b8a6); }
+    .pause { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .reset { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+    .stats {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      padding: 13px 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+    }
+
+    .chip strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .hint {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      .dashboard { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .page { width: min(100% - 16px, 980px); padding-top: 16px; }
+      .panel { padding: 18px; border-radius: 22px; }
+      .timer-card, .info-card { padding: 18px; }
+      .timer-shell { min-height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="eyebrow">Q18 - Stopwatch utility</div>
+      <h1>Track elapsed time with a dashboard stopwatch</h1>
+      <p class="lead">This stopwatch shows elapsed time clearly, supports start, pause, and reset actions, and keeps the layout simple enough for productivity-style time tracking.</p>
+
+      <div class="dashboard">
+        <article class="timer-card">
+          <div class="timer-shell">
+            <div class="ring">
+              <div>
+                <div class="time" id="timeDisplay">00:00</div>
+                <div class="status" id="statusText">Ready</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn start" id="startBtn">Start</button>
+            <button class="btn pause" id="pauseBtn" disabled>Pause</button>
+            <button class="btn reset" id="resetBtn">Reset</button>
+          </div>
+        </article>
+
+        <aside class="info-card">
+          <div class="chip">
+            <strong>Elapsed</strong>
+            <span id="elapsedChip">0 milliseconds</span>
+          </div>
+          <div class="chip" style="margin-top: 12px;">
+            <strong>Control state</strong>
+            <span id="modeChip">Idle</span>
+          </div>
+          <div class="list">
+            <div class="chip"><strong>Start</strong><span>Runs the timer if it is not already active.</span></div>
+            <div class="chip"><strong>Pause</strong><span>Stops the timer and keeps the current elapsed value.</span></div>
+            <div class="chip"><strong>Reset</strong><span>Clears the timer back to zero and returns to ready mode.</span></div>
+          </div>
+          <p class="hint">The display uses HH:MM:SS once the timer reaches an hour; below that it shows MM:SS for a cleaner dashboard look.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const timeDisplay = document.getElementById('timeDisplay');
+    const statusText = document.getElementById('statusText');
+    const elapsedChip = document.getElementById('elapsedChip');
+    const modeChip = document.getElementById('modeChip');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let elapsedMs = 0;
+    let startedAt = null;
+    let intervalId = null;
+    let running = false;
+
+    function formatTime(totalMilliseconds) {
+      const totalSeconds = Math.floor(totalMilliseconds / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const pad = (value) => String(value).padStart(2, '0');
+
+      if (hours > 0) {
+        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }
+
+      return `${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    function render() {
+      timeDisplay.textContent = formatTime(elapsedMs);
+      elapsedChip.textContent = `${elapsedMs.toLocaleString()} milliseconds`;
+      modeChip.textContent = running ? 'Running' : (elapsedMs > 0 ? 'Paused' : 'Idle');
+      statusText.textContent = running ? 'Running' : (elapsedMs > 0 ? 'Paused' : 'Ready');
+      startBtn.disabled = running;
+      pauseBtn.disabled = !running;
+    }
+
+    function tick() {
+      elapsedMs = Date.now() - startedAt;
+      render();
+    }
+
+    function startTimer() {
+      if (running) return;
+      running = true;
+      startedAt = Date.now() - elapsedMs;
+      intervalId = window.setInterval(tick, 250);
+      render();
+    }
+
+    function pauseTimer() {
+      if (!running) return;
+      running = false;
+      elapsedMs = Date.now() - startedAt;
+      window.clearInterval(intervalId);
+      intervalId = null;
+      render();
+    }
+
+    function resetTimer() {
+      running = false;
+      elapsedMs = 0;
+      startedAt = null;
+      window.clearInterval(intervalId);
+      intervalId = null;
+      render();
+    }
+
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    render();
+  </script>
+</body>
+</html>

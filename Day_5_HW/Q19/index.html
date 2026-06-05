@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q19 - Image Upload Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5efe9;
+      --bg2: #e4f1f0;
+      --panel: rgba(255, 255, 255, 0.92);
+      --text: #152435;
+      --muted: #5f6f7b;
+      --line: rgba(21, 36, 53, 0.12);
+      --accent: #0f766e;
+      --accent2: #c2410c;
+      --accent3: #7c3aed;
+      --danger: #b91c1c;
+      --shadow: 0 18px 48px rgba(15, 118, 110, 0.12);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(251, 191, 36, 0.14), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+    }
+
+    .page {
+      width: min(1040px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0 46px;
+    }
+
+    .panel {
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .lead {
+      margin: 12px 0 0;
+      max-width: 68ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(21, 36, 53, 0.06);
+    }
+
+    .upload-card { padding: 22px; }
+    .preview-card { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    .dropzone {
+      border: 2px dashed rgba(15, 118, 110, 0.22);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.05), rgba(255, 255, 255, 0.9));
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .dropzone strong { font-size: 1.12rem; }
+    .dropzone p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--muted);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      transition: transform 160ms ease, opacity 160ms ease;
+      box-shadow: 0 12px 26px rgba(15, 118, 110, 0.18);
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .primary { background: linear-gradient(135deg, var(--accent), #14b8a6); }
+    .secondary { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+    .message {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--accent);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .message.error {
+      background: rgba(185, 28, 28, 0.08);
+      color: var(--danger);
+      border-color: rgba(185, 28, 28, 0.16);
+    }
+
+    .preview-stage {
+      min-height: 390px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(228, 241, 240, 0.88));
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+      padding: 18px;
+    }
+
+    .placeholder {
+      text-align: center;
+      color: var(--muted);
+      max-width: 24rem;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+
+    .placeholder-badge {
+      width: 92px;
+      height: 92px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(124, 58, 237, 0.18));
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .preview-image {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      border-radius: 20px;
+      display: none;
+      background: white;
+      box-shadow: 0 12px 32px rgba(21, 36, 53, 0.12);
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .chip {
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+    }
+
+    .chip strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .page { width: min(100% - 16px, 1040px); padding-top: 16px; }
+      .panel { padding: 18px; border-radius: 22px; }
+      .upload-card, .preview-card { padding: 18px; }
+      .details { grid-template-columns: 1fr; }
+      .preview-stage { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="eyebrow">Q19 - Image upload preview</div>
+      <h1>Validate image files and preview them before upload</h1>
+      <p class="lead">Choose an image file, confirm it is under 2MB, and inspect the preview instantly before proceeding with the upload flow.</p>
+
+      <div class="layout">
+        <article class="card upload-card">
+          <div class="dropzone">
+            <div>
+              <strong>Upload image</strong>
+              <p>Only image files are allowed. The file size limit is 2MB, matching a lightweight profile or social upload flow.</p>
+            </div>
+
+            <input id="fileInput" type="file" accept="image/*" />
+
+            <div class="input-row">
+              <button id="clearBtn" class="btn secondary" type="button">Clear selection</button>
+              <div class="message" id="message">No file selected yet.</div>
+            </div>
+          </div>
+
+          <div class="details" style="margin-top: 16px;">
+            <div class="chip"><strong>Allowed type</strong><span>Images only</span></div>
+            <div class="chip"><strong>Max size</strong><span>2MB</span></div>
+            <div class="chip"><strong>Preview method</strong><span>Local browser FileReader</span></div>
+            <div class="chip"><strong>Status</strong><span id="statusLabel">Waiting for file</span></div>
+          </div>
+
+          <p class="hint">If the file fails validation, the preview area stays empty and the error message explains what to fix.</p>
+        </article>
+
+        <article class="card preview-card">
+          <div class="preview-stage">
+            <div class="placeholder" id="placeholder">
+              <div class="placeholder-badge">+</div>
+              <strong>Preview will appear here</strong>
+              <span>Select a valid image to see a live preview before upload.</span>
+            </div>
+            <img id="previewImage" class="preview-image" alt="Selected image preview" />
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const message = document.getElementById('message');
+    const statusLabel = document.getElementById('statusLabel');
+    const previewImage = document.getElementById('previewImage');
+    const placeholder = document.getElementById('placeholder');
+
+    const maxSizeBytes = 2 * 1024 * 1024;
+    let objectUrl = null;
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function clearPreview() {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+      }
+      previewImage.removeAttribute('src');
+      previewImage.style.display = 'none';
+      placeholder.style.display = 'grid';
+    }
+
+    function setMessage(text, isError = false) {
+      message.textContent = text;
+      message.classList.toggle('error', isError);
+      statusLabel.textContent = isError ? 'Needs attention' : 'Ready';
+    }
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) {
+        clearPreview();
+        setMessage('No file selected yet.');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        clearPreview();
+        setMessage('Only image files are allowed. Please choose a JPG, PNG, WEBP, GIF, or similar image.', true);
+        fileInput.value = '';
+        return;
+      }
+
+      if (file.size > maxSizeBytes) {
+        clearPreview();
+        setMessage(`File is too large. Please choose an image smaller than 2MB. Current size: ${formatSize(file.size)}.`, true);
+        fileInput.value = '';
+        return;
+      }
+
+      clearPreview();
+      objectUrl = URL.createObjectURL(file);
+      previewImage.src = objectUrl;
+      previewImage.style.display = 'block';
+      placeholder.style.display = 'none';
+      setMessage(`Preview ready for ${file.name} (${formatSize(file.size)}).`);
+      statusLabel.textContent = 'Valid image selected';
+    });
+
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      clearPreview();
+      setMessage('Selection cleared. Choose another image to preview it.');
+      statusLabel.textContent = 'Waiting for file';
+    });
+  </script>
+</body>
+</html>
