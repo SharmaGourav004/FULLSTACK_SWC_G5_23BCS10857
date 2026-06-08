@@ -1,0 +1,128 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Manager</title>
+
+<style>
+  body{
+    font-family: Arial;
+    background:#f4f4f4;
+    padding:40px;
+  }
+
+  .container{
+    max-width:500px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+  }
+
+  input{
+    width:70%;
+    padding:10px;
+  }
+
+  button{
+    padding:10px;
+    cursor:pointer;
+  }
+
+  li{
+    margin-top:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  .completed{
+    text-decoration: line-through;
+    color:gray;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Task Manager</h2>
+
+  <input type="text" id="taskInput" placeholder="Enter task">
+  <button onclick="addTask()">Add</button>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+  let tasks = [];
+  let editIndex = -1;
+
+  function addTask() {
+    const input = document.getElementById("taskInput");
+    const text = input.value.trim();
+
+    if(text === "") return;
+
+    if(editIndex === -1){
+      tasks.push({
+        text:text,
+        completed:false
+      });
+    } else {
+      tasks[editIndex].text = text;
+      editIndex = -1;
+    }
+
+    input.value = "";
+    renderTasks();
+  }
+
+  function renderTasks(){
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    tasks.forEach((task,index)=>{
+
+      const li = document.createElement("li");
+
+      li.innerHTML = `
+        <span class="${task.completed ? 'completed':''}">
+          ${task.text}
+        </span>
+
+        <div>
+          <button onclick="toggleTask(${index})">✓</button>
+          <button onclick="editTask(${index})">Edit</button>
+          <button onclick="deleteTask(${index})">Delete</button>
+        </div>
+      `;
+
+      list.appendChild(li);
+    });
+  }
+
+  function toggleTask(index){
+    tasks[index].completed = !tasks[index].completed;
+    renderTasks();
+  }
+
+  function editTask(index){
+    document.getElementById("taskInput").value =
+      tasks[index].text;
+
+    editIndex = index;
+  }
+
+  function deleteTask(index){
+    tasks.splice(index,1);
+    renderTasks();
+  }
+</script>
+
+</body>
+</html>
+```
